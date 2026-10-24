@@ -1,0 +1,4013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>人类 vs 魔灵 · 战场</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:#0a1410;color:#eee;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;display:flex;justify-content:center;user-select:none}
+#menu{position:fixed;inset:0;z-index:500;background:radial-gradient(ellipse at 50% 30%,#1b2a3f 0%,#0a1018 60%,#050810 100%);display:flex;flex-direction:column;color:#fff}
+#menu.hide{display:none}
+.menu-top{display:flex;justify-content:space-around;padding:26px 16px 0;font-size:15px;font-weight:600;letter-spacing:2px}
+.menu-top span{cursor:pointer;opacity:.85}
+.menu-top span:hover{opacity:1;text-shadow:0 0 12px rgba(255,255,255,.6)}
+.menu-mid{flex:1;display:grid;place-items:center}
+.menu-mid .big{font-size:64px;font-weight:900;letter-spacing:12px;cursor:pointer;transition:all .2s;text-shadow:0 0 20px rgba(255,255,255,.15)}
+.menu-mid .big:hover{letter-spacing:16px;color:#ffd166}
+.menu-bot{display:flex;justify-content:space-around;padding:0 16px 40px;font-size:18px;font-weight:700;letter-spacing:4px}
+.menu-bot span{cursor:pointer;opacity:.85}
+.menu-bot span:hover{opacity:1;color:#ffd166}
+@media(max-width:520px){.menu-mid .big{font-size:48px;letter-spacing:8px}.menu-top{font-size:13px}.menu-bot{font-size:16px;letter-spacing:3px}}
+#game{width:100%;max-width:960px;height:100vh;display:flex;flex-direction:column;padding:4px;gap:3px;padding-top:calc(4px + env(safe-area-inset-top))}
+.phase-bar{text-align:center;padding:4px;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);border-radius:6px;color:#ffd166;flex-shrink:0}
+.phase-bar.reversed{color:#c06bff;background:rgba(192,107,255,.12)}
+.phase-bar.targeting{color:#ff8a8a;background:rgba(255,107,107,.15);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.bar{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);flex-shrink:0;position:relative}
+.bar.e{border-color:rgba(200,120,255,.35);cursor:pointer}
+.bar.p{border-color:rgba(120,200,255,.35)}
+.bar.active{border-color:#ffd166;box-shadow:0 0 12px rgba(255,209,102,.4)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:rgba(255,255,255,.08);flex-shrink:0;position:relative}
+.av .mode-tag{position:absolute;bottom:-2px;right:-2px;font-size:8px;background:#5a3fa8;color:#fff;border-radius:4px;padding:0 3px;font-weight:800}
+.info{flex:1;min-width:0;font-size:11px}
+.name{font-weight:700;font-size:12px}
+.hp{min-width:56px;text-align:center;padding:4px 10px;font-size:26px;font-weight:900;border-radius:8px;background:#b91c1c;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.hp-cap{font-size:12px;opacity:.6;font-weight:700}
+.mana-row{display:flex;gap:3px;align-items:center;margin-top:3px;flex-wrap:wrap}
+.mana-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.15)}
+.mana-dot.on{background:radial-gradient(circle at 35% 30%,#c9b8ff,#6a4fff);box-shadow:0 0 6px rgba(150,120,255,.9)}
+.mana-dot.bonus{background:radial-gradient(circle at 35% 30%,#ffe9a8,#e0a100);box-shadow:0 0 6px rgba(255,209,102,.9)}
+.mana-txt{font-size:10px;color:#b0a8ff;font-weight:700;margin-left:2px}
+.board{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:2px;min-height:0}
+.row{display:flex;gap:2px;justify-content:center}
+.slot{width:clamp(42px,9.5vw,58px);height:clamp(56px,12vw,72px);border:1.5px dashed rgba(255,255,255,.1);border-radius:7px;display:grid;place-items:center;position:relative;cursor:pointer;transition:all .12s}
+.slot.water{background:rgba(50,130,220,.25);border-color:rgba(90,170,255,.6);border-style:solid}
+.slot.water::before{content:'🌊';position:absolute;top:1px;right:2px;font-size:9px;opacity:.7}
+.slot.env{background:rgba(180,120,220,.15);border-color:rgba(200,150,255,.4);border-style:solid}
+.slot.env::before{content:'✨';position:absolute;top:1px;right:2px;font-size:9px;opacity:.7}
+.slot.env-corrupt{background:rgba(120,60,160,.2);border-color:rgba(180,80,220,.5);border-style:solid}
+.slot.env-corrupt::before{content:'☠️';position:absolute;top:1px;right:2px;font-size:9px;opacity:.7}
+.slot.env-gravity{background:rgba(100,80,200,.25);border-color:rgba(150,120,255,.6);border-style:solid}
+.slot.env-gravity::before{content:'🌌';position:absolute;top:1px;right:2px;font-size:9px;opacity:.8}
+.slot.play{border-color:#6effb0;border-style:solid;background:rgba(110,255,176,.1)}
+.slot.target{border-color:#ffd166;border-style:solid;background:rgba(255,209,102,.15)}
+.slot.targetable{border-color:#ff6b6b;border-style:dashed;background:rgba(255,107,107,.15);cursor:crosshair}
+.minion{width:100%;height:100%;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#2f4460;border:1.5px solid #4a6a90;position:relative;animation:pop .2s}
+.minion.e{background:#3f2a55;border-color:#7a4aa0}
+.minion.frozen{filter:brightness(.8) saturate(.6);box-shadow:inset 0 0 12px rgba(120,200,255,.8)}
+.minion.burning{box-shadow:inset 0 0 10px rgba(255,100,0,.7)}
+.minion.mist{background:#3a3a5a;border-color:#8a8ab0;box-shadow:inset 0 0 14px rgba(180,180,220,.5)}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.ma{font-size:20px;line-height:1}
+.mat,.mhp{position:absolute;bottom:-3px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:9px;border:1.5px solid rgba(0,0,0,.5)}
+.mat{left:-3px;background:#e0a100;color:#3a2a00}
+.mhp{right:-3px;background:#b91c1c;color:#fff}
+.kw{position:absolute;top:1px;left:2px;font-size:8px;line-height:1.1}
+.hand-area{flex-shrink:0;display:flex;justify-content:center;padding-bottom:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.hand{display:grid;grid-template-columns:repeat(5,66px);grid-auto-rows:92px;gap:4px;justify-content:center}
+.card{width:66px;height:92px;border-radius:6px;background:#2f4460;border:1.5px solid #4a6a90;display:flex;flex-direction:column;align-items:center;padding:4px 3px;cursor:pointer;position:relative;transition:transform .12s;user-select:none}
+.card.sp{background:#3d3566;border-color:#6a5aa8}
+.card.env{background:#1f4a5a;border-color:#3a9fc0}
+.card.tech{background:#3a2f4a;border-color:#8a5aff}
+.card.ult{background:#4a2a1a;border-color:#ffb347;box-shadow:0 0 8px rgba(255,179,71,.5)}
+.card.disc{box-shadow:inset 0 0 0 2px rgba(120,230,120,.9)}
+.card.cracked{filter:grayscale(1) brightness(.6);border-style:dashed;border-color:#666;cursor:not-allowed}
+.card.cracked .cc{background:#555;color:#ccc}
+.card.r3{box-shadow:inset 0 0 0 1px rgba(90,180,255,.5)}
+.card.r5{box-shadow:inset 0 0 0 1px rgba(255,180,80,.7)}
+.card.sel{transform:scale(1.05);border-color:#ffd166;box-shadow:0 0 14px rgba(255,209,102,.6)}
+.card.targeting{transform:scale(1.08);border-color:#ff6b6b;box-shadow:0 0 14px rgba(255,107,107,.7)}
+.card.no{filter:grayscale(.7) brightness(.55);cursor:not-allowed}
+.cc{position:absolute;top:-5px;left:-5px;width:18px;height:18px;border-radius:50%;background:#3f6ac9;border:1.5px solid #000;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.sp .cc{background:#5a3fa8}
+.env .cc{background:#1e6f8a}
+.tech .cc{background:#5a3fa8}
+.ult .cc{background:#ffb347;color:#3a1a00}
+.disc .cc{background:#3fa82b}
+.cracked .cc{background:#555;color:#ccc}
+.rar{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;background:#444;color:#aaa;border:1.5px solid #000}
+.rar.r3{background:#3a6fa8;color:#dff0ff}
+.rar.r5{background:#a86a1a;color:#fff5d0}
+.ca{font-size:20px;margin-top:3px}
+.cn{font-size:9px;font-weight:700;margin-top:1px;text-align:center}
+.ct{font-size:7px;opacity:.6;text-align:center;margin-top:1px;line-height:1.15}
+.cs{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:space-between;padding:0 5px;font-size:11px;font-weight:800}
+.cs .a{color:#ffd166}
+.cs .h{color:#ff8a8a}
+button{padding:6px 10px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;border:none;font-family:inherit}
+#end{background:#e0a100;color:#1a1206}
+#heroSkill{background:#8a4fc2;color:#fff}
+#switchBtn{background:#3a8fa8;color:#fff}
+button:disabled{background:#333;color:#777;cursor:default}
+.tip{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(20,30,20,.98);border:2px solid #ffd166;border-radius:12px;padding:14px 18px;max-width:280px;min-width:200px;z-index:900;display:none;box-shadow:0 0 40px rgba(0,0,0,.9);pointer-events:none;text-align:center}
+.tip.show{display:block}
+.tip .t-art{font-size:40px;line-height:1}
+.tip .t-name{font-size:15px;font-weight:800;margin-top:5px;color:#ffd166}
+.tip .t-rar{font-size:10px;opacity:.7;margin-top:3px}
+.tip .t-tags{font-size:10px;color:#8a9aff;margin-top:4px}
+.tip .t-stats{font-size:14px;font-weight:800;margin-top:4px}
+.tip .t-stats .a{color:#ffd166}
+.tip .t-stats .h{color:#ff8a8a}
+.tip .t-text{font-size:11px;opacity:.85;margin-top:8px;line-height:1.5;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)}
+.cast-popup{position:fixed;pointer-events:none;z-index:360;background:rgba(20,30,20,.96);border:2px solid #ffd166;border-radius:10px;padding:8px 12px;min-width:90px;max-width:140px;text-align:center;opacity:0;transform:scale(.5);transition:all .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 24px rgba(255,209,102,.5)}
+.cast-popup.show{opacity:1;transform:scale(1)}
+.cast-popup.human-side{border-color:#6ec8ff;box-shadow:0 0 24px rgba(110,200,255,.5)}
+.cast-popup.spirit-side{border-color:#c06bff;box-shadow:0 0 24px rgba(192,107,255,.5)}
+.cast-popup .cp-art{font-size:26px;line-height:1}
+.cast-popup .cp-name{font-size:11px;font-weight:800;margin-top:2px;color:#fff}
+.cast-popup .cp-side{font-size:9px;opacity:.7;margin-bottom:2px}
+.cast-popup.human-side .cp-side{color:#6ec8ff}
+.cast-popup.spirit-side .cp-side{color:#c06bff}
+.cast-popup .cp-text{font-size:9px;opacity:.8;margin-top:4px;line-height:1.3}
+.psel{position:fixed;inset:0;background:rgba(5,10,5,.96);display:none;place-items:center;z-index:600;padding:16px;overflow-y:auto}
+.psel.show{display:grid}
+.psel-inner{text-align:center;max-width:660px;margin:auto}
+.psel h2{font-size:20px;font-weight:800;color:#ffd166;margin-bottom:6px}
+.psel-sub{font-size:11px;opacity:.6;margin-bottom:18px}
+.psel-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.pcard{width:130px;padding:14px 10px;border-radius:10px;background:#1f2c3d;border:2px solid #4a6a90;cursor:pointer;transition:all .15s;text-align:center;color:#eee}
+.pcard:hover{transform:scale(1.06);border-color:#ffd166}
+.pcard .art{font-size:36px;line-height:1}
+.pcard .name{font-size:13px;font-weight:800;margin-top:8px;color:#fff}
+.pcard .desc{font-size:10px;opacity:.7;margin-top:6px;line-height:1.35}
+.pcard.side-card{width:180px;padding:20px 14px}
+.pcard.side-card .art{font-size:50px}
+.pcard.side-card .name{font-size:16px}
+.pcard.leader-card{width:160px;padding:16px 10px}
+.pcard.leader-card .art{font-size:44px}
+.pcard .leader-tag{font-size:9px;opacity:.65;margin-top:3px;color:#8a9aff}
+.ov{position:fixed;inset:0;background:rgba(5,10,5,.92);display:none;place-items:center;z-index:100}
+.ov.show{display:grid}
+.res{text-align:center;padding:26px 38px;border-radius:14px;background:#1f2c3d;border:1px solid rgba(255,209,102,.4)}
+.rt{font-size:32px;font-weight:900}
+.rt.win{color:#ffd166}
+.rt.lose{color:#ff6b6b}
+.rt.draw{color:#9aa0c0}
+.rs{margin-top:6px;font-size:12px;opacity:.6}
+.rb{margin-top:18px;padding:9px 28px;border-radius:6px;font-size:13px;font-weight:800;background:#e0a100;color:#1a1206;cursor:pointer;border:none}
+.swap-wrap{position:fixed;inset:0;background:rgba(5,10,5,.97);z-index:610;display:none;flex-direction:column;padding:16px;gap:10px}
+.swap-wrap.show{display:flex}
+.swap-title{text-align:center;font-size:18px;font-weight:800;color:#ffd166}
+.swap-sub{text-align:center;font-size:11px;opacity:.6}
+.swap-hands{flex:1;display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:center}
+.swap-hand{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.swap-label{font-size:12px;font-weight:800;margin-bottom:6px;text-align:center}
+.swap-label.human{color:#6ec8ff}
+.swap-label.spirit{color:#c06bff}
+.swap-label.opp{color:#888;opacity:.7}
+.swap-footer{padding:6px;display:flex;justify-content:center}
+.builder{position:fixed;inset:0;background:rgba(5,10,5,.98);z-index:620;display:none;flex-direction:column;padding:8px;gap:6px}
+.builder.show{display:flex}
+.bd-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 10px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.bd-title{font-size:13px;font-weight:800;color:#ffd166}
+.bd-hero-btn{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:800;background:#2f4460;color:#eee;border:1px solid #4a6a90;cursor:pointer}
+.bd-hero-btn:hover{border-color:#ffd166}
+.bd-tabs{display:flex;gap:4px;margin-left:auto}
+.bd-tab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:800;background:#333;color:#888;cursor:pointer;border:none}
+.bd-tab.active{background:#3fa82b;color:#fff}
+.bd-stats{font-size:11px;color:#9fe87f;font-weight:700;margin-left:6px}
+.bd-stats .over{color:#ff6b6b}
+.bd-body{flex:1;display:flex;gap:6px;min-height:0}
+.bd-pool,.bd-deck{flex:1;overflow-y:auto;padding:6px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.08);display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
+.bd-deck{background:rgba(120,230,120,.04);border-color:rgba(120,230,120,.15)}
+.bd-card{width:54px;height:76px;border-radius:6px;background:#2f4460;border:1.5px solid #4a6a90;display:flex;flex-direction:column;align-items:center;padding:3px 2px;cursor:pointer;position:relative;flex-shrink:0}
+.bd-card.sp{background:#3d3566;border-color:#6a5aa8}
+.bd-card.env{background:#1f4a5a;border-color:#3a9fc0}
+.bd-card.tech{background:#3a2f4a;border-color:#8a5aff}
+.bd-card.exclusive{border-color:#ffb347;box-shadow:0 0 6px rgba(255,179,71,.4)}
+.bd-card.r3{box-shadow:inset 0 0 0 1px rgba(90,180,255,.5)}
+.bd-card.r5{box-shadow:inset 0 0 0 1px rgba(255,180,80,.7)}
+.bd-card.no{filter:grayscale(.7) brightness(.5);cursor:not-allowed}
+.bd-card .cnt{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#e0a100;color:#1a1206;display:grid;place-items:center;font-size:10px;font-weight:800;border:1.5px solid #000}
+.bd-card .rar{position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;display:grid;place-items:center;font-size:8px;font-weight:800;background:#444;color:#aaa;border:1px solid #000}
+.bd-card .rar.r3{background:#3a6fa8;color:#dff0ff}
+.bd-card .rar.r5{background:#a86a1a;color:#fff5d0}
+.bd-card .lock-badge{position:absolute;top:1px;left:1px;font-size:8px;color:#ffb347}
+.bd-footer{padding:4px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.bd-btn{padding:7px 14px;border-radius:8px;font-size:11px;font-weight:800;background:#e0a100;color:#1a1206;cursor:pointer;border:none}
+.bd-btn.reset{background:#8a5aff;color:#fff}
+.bd-btn.book{background:#3a8fa8;color:#fff}
+.bd-btn:disabled{background:#333;color:#777;cursor:default}
+.deck-slots{position:fixed;inset:0;background:rgba(5,10,5,.97);z-index:615;display:none;flex-direction:column;padding:20px;gap:10px}
+.deck-slots.show{display:flex}
+.deck-slots h2{text-align:center;font-size:18px;color:#ffd166;font-weight:800}
+.deck-slot{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;transition:all .15s}
+.deck-slot:hover{background:rgba(255,255,255,.1);border-color:#ffd166}
+.deck-slot .sn{font-size:12px;font-weight:800;color:#ffd166;width:30px}
+.deck-slot .sname{flex:1;font-size:13px;color:#eee}
+.deck-slot .sacts{display:flex;gap:4px}
+.deck-slot .sact{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800;background:#3a8fa8;color:#fff;border:none;cursor:pointer}
+.deck-slot .sact.del{background:#c44}
+.deck-slot .sact.use{background:#3fa82b}
+.spelllog-btn{position:absolute;right:6px;top:-12px;padding:3px 8px;border-radius:6px;background:#1f4a5a;color:#7fd0ff;font-size:10px;font-weight:800;border:1px solid #3a9fc0;cursor:pointer;z-index:5}
+.spelllog{position:fixed;right:8px;top:8px;width:230px;max-height:60vh;background:rgba(20,30,20,.98);border:2px solid #3a9fc0;border-radius:10px;z-index:380;display:none;flex-direction:column;padding:10px;box-shadow:0 0 30px rgba(58,159,192,.5)}
+.spelllog.show{display:flex}
+.spelllog h3{font-size:12px;color:#7fd0ff;font-weight:800;margin-bottom:6px;text-align:center}
+.spelllog .sl-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.spelllog .sl-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,.05);border-radius:6px;font-size:11px}
+.spelllog .sl-item.human{border-left:3px solid #6ec8ff}
+.spelllog .sl-item.spirit{border-left:3px solid #c06bff}
+.spelllog .empty{text-align:center;opacity:.5;font-size:11px;padding:10px}
+.spelllog .close{margin-top:6px;padding:4px;background:#3a9fc0;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer}
+#bookBtn{position:fixed;right:10px;bottom:210px;width:44px;height:44px;border-radius:50%;background:#3a2f4a;border:2px solid #8a5aff;color:#fff;font-size:22px;display:grid;place-items:center;cursor:pointer;z-index:150;box-shadow:0 0 18px rgba(138,90,255,.6);padding:0}
+.book{position:fixed;inset:0;background:rgba(5,10,5,.98);z-index:700;display:none;flex-direction:column;padding:8px;gap:6px}
+.book.show{display:flex}
+.bk-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.bk-title{font-size:14px;font-weight:800;color:#ffd166}
+.bk-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.bk-tab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:800;background:#333;color:#888;cursor:pointer;border:none}
+.bk-tab.active{background:#3fa82b;color:#fff}
+.bk-search{padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.4);color:#eee;font-size:12px;width:130px;outline:none}
+.bk-body{flex:1;overflow-y:auto;padding:8px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.08);display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.bk-card{width:80px;height:114px;border-radius:8px;background:#2f4460;border:2px solid #4a6a90;display:flex;flex-direction:column;align-items:center;padding:5px 4px;cursor:pointer;position:relative;flex-shrink:0}
+.bk-card.sp{background:#3d3566;border-color:#6a5aa8}
+.bk-card.env{background:#1f4a5a;border-color:#3a9fc0}
+.bk-card.tech{background:#3a2f4a;border-color:#8a5aff}
+.bk-card.ult{background:#4a2a1a;border-color:#ffb347}
+.bk-card.exclusive{border-color:#ffb347;box-shadow:0 0 10px rgba(255,179,71,.4)}
+.bk-card .bk-cc{position:absolute;top:-5px;left:-5px;width:20px;height:20px;border-radius:50%;background:#3f6ac9;border:2px solid #000;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.bk-card .bk-rar{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;background:#444;color:#aaa;border:1.5px solid #000}
+.bk-card .bk-rar.r3{background:#3a6fa8;color:#dff0ff}
+.bk-card .bk-rar.r5{background:#a86a1a;color:#fff5d0}
+.bk-card .bk-art{font-size:24px;margin-top:5px}
+.bk-card .bk-name{font-size:9px;font-weight:700;margin-top:2px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.bk-card .bk-tag{font-size:8px;opacity:.65;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.bk-card .bk-leader{font-size:7px;color:#ffb347;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.bk-card .bk-stats{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:space-between;padding:0 6px;font-size:10px;font-weight:800}
+.bk-card .bk-stats .a{color:#ffd166}
+.bk-card .bk-stats .h{color:#ff8a8a}
+.bk-footer{padding:4px;display:flex;justify-content:center}
+.bk-btn{padding:8px 24px;border-radius:8px;font-size:12px;font-weight:800;background:#e0a100;color:#1a1206;cursor:pointer;border:none}
+.settings-list{display:flex;flex-direction:column;gap:8px;max-width:320px;margin:0 auto}
+.setting-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;color:#eee;cursor:pointer;transition:all .15s}
+.setting-item:hover{background:rgba(255,255,255,.1);border-color:#ffd166}
+.setting-item.disabled{opacity:.4;cursor:not-allowed}
+.setting-item.disabled:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)}
+.setting-item.danger{color:#ff8a8a}
+.setting-item.danger:hover{border-color:#c44;background:rgba(200,60,60,.15)}
+.battle-start-anim{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.5);background:linear-gradient(135deg,#3a2f4a,#1f2c3d);border:3px solid #ffd166;border-radius:16px;padding:18px 30px;z-index:850;text-align:center;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 50px rgba(255,209,102,.7);pointer-events:none}
+.battle-start-anim.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.battle-start-anim .bs-art{font-size:44px;line-height:1}
+.battle-start-anim .bs-title{font-size:16px;font-weight:800;color:#ffd166;margin-top:6px}
+.battle-start-anim .bs-desc{font-size:12px;opacity:.8;margin-top:4px;color:#fff}
+@media(max-width:520px){.hand{grid-template-columns:repeat(5,60px);grid-auto-rows:84px}.card{width:60px;height:84px}.spelllog{width:200px}}
+#tutHighlight{position:fixed;border:2px solid #ffd166;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72),0 0 24px rgba(255,209,102,.8);pointer-events:none;z-index:940;display:none;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+#tutBubble{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);width:min(380px,92vw);background:linear-gradient(135deg,#1f2c3d,#141f2e);border:2px solid #ffd166;border-radius:14px;padding:16px 18px 14px;z-index:950;display:none;box-shadow:0 10px 40px rgba(0,0,0,.8);animation:tutPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes tutPop{from{transform:translateX(-50%) scale(.8);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+#tutBubble .tut-step-num{font-size:11px;color:#ffd166;font-weight:700;margin-bottom:6px;letter-spacing:1px}
+#tutBubble .tut-text{font-size:14px;line-height:1.6;color:#fff;min-height:48px}
+#tutBubble .tut-btns{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+#tutBubble .tut-next{background:#ffd166;color:#1a1206;padding:8px 20px;font-weight:800;border-radius:8px;flex:1;font-size:13px}
+#tutBubble .tut-next:disabled{opacity:.4}
+#tutBubble .tut-skip{background:transparent;color:#888;font-size:11px;padding:8px;text-decoration:underline;border:none;cursor:pointer}
+/* ===== 肉鸽 ===== */
+.rogue-toolbar{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.rogue-toolbar .bd-btn{font-size:12px;padding:8px 18px}
+.rogue-adjust-info{padding:12px;background:rgba(255,255,255,.05);border-radius:8px;margin-bottom:16px;line-height:1.8;font-size:13px}
+.rogue-load-slots{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:600px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <div class="menu-top">
+    <span onclick="menuClick('消息')">📬 消息</span>
+    <span onclick="openRogueMode()">🗺 探索之旅</span>
+    <span onclick="openSettings()">⚙️ 设置</span>
+  </div>
+  <div class="menu-mid"><div class="big" onclick="openBattleSub()">⚔️ 对战</div></div>
+  <div class="menu-bot">
+    <span onclick="menuClick('活动')">🎉 活动</span>
+    <span onclick="openDeckSlots()">🎴 套牌</span>
+    <span onclick="startTutorial()">📖 教程</span>
+  </div>
+</div>
+
+<div class="psel" id="battleSub">
+  <div class="psel-inner">
+    <h2>选择对战模式</h2>
+    <div class="psel-sub">快速体验无需建卡，直接开局</div>
+    <div class="psel-cards">
+      <div class="pcard side-card" onclick="startQuickPlay()"><div class="art">⚡️</div><div class="name">快速体验</div><div class="desc">随机套牌直接开打</div></div>
+      <div class="pcard side-card" onclick="startSinglePlayer()"><div class="art">🤖</div><div class="name">自建套牌</div><div class="desc">使用你组建的卡组</div></div>
+    </div>
+  </div>
+</div>
+<div class="psel" id="deckSelect"><div class="psel-inner"><h2>选择套牌</h2><div class="psel-sub">必须先建好套牌才能对战</div><div class="psel-cards" id="deckSelectCards"></div></div></div>
+<div class="psel" id="blessingChoice"><div class="psel-inner"><h2 id="bcTitle">选择祝福</h2><div class="psel-sub" id="bcSub">选 1 张加入手牌 · 另外 2 张洗入牌库</div><div class="psel-cards" id="bcCards"></div></div></div>
+<div class="psel" id="builderLeaderSelect"><div class="psel-inner"><h2 id="blsTitle">选择</h2><div class="psel-sub" id="blsSub"></div><div class="psel-cards" id="blsCards"></div></div></div>
+<div class="psel" id="genericSel"><div class="psel-inner"><h2 id="gsTitle"></h2><div class="psel-sub" id="gsSub"></div><div class="psel-cards" id="gsCards"></div></div></div>
+<div class="psel" id="settingsSel">
+  <div class="psel-inner">
+    <h2>⚙️ 设置</h2>
+    <div class="psel-sub">对局中可使用投降</div>
+    <div class="settings-list">
+      <div class="setting-item" id="setKeywords">📖 词条图鉴<span>→</span></div>
+      <div class="setting-item danger" id="setSurrender">🏳️ 投降<span>—</span></div>
+      <div class="setting-item" id="setExit">🚪 退出对局<span>—</span></div>
+    </div>
+    <div style="margin-top:20px"><button class="bd-btn" id="setClose">关闭</button></div>
+  </div>
+</div>
+<div class="psel" id="keywordBook">
+  <div class="psel-inner">
+    <h2>📖 词条说明</h2>
+    <div class="psel-sub">点击查看关键词效果</div>
+    <div class="psel-cards" id="kwCards" style="gap:6px"></div>
+    <div style="margin-top:16px"><button class="bd-btn" id="kwClose">关闭</button></div>
+  </div>
+</div>
+
+<div class="psel" id="rogueMap">
+  <div class="psel-inner">
+    <h2>🗺 探索之旅</h2>
+    <div class="psel-sub" id="rogueStats"></div>
+    <div class="psel-cards" id="rogueNodes" style="gap:16px"></div>
+    <div class="rogue-toolbar">
+      <button class="bd-btn book" id="rogueAdjustBtn">⚙️ 调整领袖 / 套牌</button>
+    </div>
+  </div>
+</div>
+<div class="psel" id="rogueArchetype">
+  <div class="psel-inner">
+    <h2>选择体系</h2>
+    <div class="psel-sub">每个体系有不同领袖和核心卡组</div>
+    <div class="psel-cards" id="rogueArchetypeCards"></div>
+  </div>
+</div>
+<div class="psel" id="rogueReward">
+  <div class="psel-inner">
+    <h2>🎉 战斗胜利！</h2>
+    <div class="psel-sub" id="rogueRewardSub">选择一张卡牌加入你的卡组</div>
+    <div class="psel-cards" id="rogueRewardCards"></div>
+  </div>
+</div>
+<div class="psel" id="rogueShop">
+  <div class="psel-inner">
+    <h2>🏪 商店</h2>
+    <div class="psel-sub" id="rogueShopGold"></div>
+    <div class="psel-cards" id="rogueShopCards" style="margin-bottom:20px"></div>
+    <div class="psel-cards" id="rogueShopDelList"></div>
+    <div style="margin-top:20px"><button class="bd-btn" id="rogueShopLeave">离开</button></div>
+  </div>
+</div>
+<div class="psel" id="rogueDeleteCard">
+  <div class="psel-inner">
+    <h2>选择要删除的卡牌</h2>
+    <div class="psel-sub" id="rogueDeleteSub"></div>
+    <div class="psel-cards" id="rogueDeleteList" style="gap:6px"></div>
+    <div style="margin-top:16px"><button class="bd-btn" id="rogueDeleteClose">取消</button></div>
+  </div>
+</div>
+<div class="psel" id="rogueEvent">
+  <div class="psel-inner">
+    <h2>❓ 未知事件</h2>
+    <div class="psel-sub">选择一项</div>
+    <div class="psel-cards" id="rogueEventChoices"></div>
+  </div>
+</div>
+<div class="psel" id="rogueSideSelect">
+  <div class="psel-inner">
+    <h2>选择你的初始阵营</h2>
+    <div class="psel-cards">
+      <div class="pcard side-card" onclick="initRogueRun('human')"><div class="art">🧑</div><div class="name">人类方</div></div>
+      <div class="pcard side-card" onclick="initRogueRun('spirit')"><div class="art">👻</div><div class="name">魔灵方</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 肉鸽调整面板（换领袖 / 换套牌） -->
+<div class="psel" id="rogueAdjust">
+  <div class="psel-inner">
+    <h2>⚙️ 调整</h2>
+    <div class="psel-sub">更换领袖或从套牌位加载卡组</div>
+    <div class="rogue-adjust-info" id="rogueAdjustInfo"></div>
+    <div class="psel-cards" style="margin-bottom:14px">
+      <div class="pcard" onclick="openRogueLeaderSelect()"><div class="art">👑</div><div class="name">更换领袖</div><div class="desc">挑选同阵营的其他领袖</div></div>
+    </div>
+    <div class="psel-sub" style="margin-top:14px">从套牌位加载（会替换当前卡组）</div>
+    <div class="rogue-load-slots" id="rogueLoadSlots"></div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+      <button class="bd-btn reset" id="rogueAdjustCancel">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 肉鸽换领袖面板 -->
+<div class="psel" id="rogueLeaderSelect">
+  <div class="psel-inner">
+    <h2>选择新的主领袖</h2>
+    <div class="psel-sub" id="rogueLeaderSelectSub">当前副领袖会自动保留</div>
+    <div class="psel-cards" id="rogueLeaderSelectCards"></div>
+    <div style="margin-top:20px"><button class="bd-btn reset" id="rogueLeaderSelectCancel">返回</button></div>
+  </div>
+</div>
+
+<div class="swap-wrap" id="swapWrap">
+  <div class="swap-title">换牌阶段</div>
+  <div class="swap-sub">点击自己手牌即可原地替换（每张限一次）· 对手手牌不可见</div>
+  <div class="swap-hands">
+    <div id="swapOwnWrap">
+      <div class="swap-label human" id="swapOwnLabel">🧑 你的手牌</div>
+      <div class="swap-hand" id="swapOwn"></div>
+    </div>
+    <div>
+      <div class="swap-label opp" id="swapOppLabel">对手手牌</div>
+      <div class="swap-hand" id="swapOpp"></div>
+    </div>
+  </div>
+  <div class="swap-footer"><button class="bd-btn" id="swapDone">开战</button></div>
+</div>
+<div class="deck-slots" id="deckSlots">
+  <h2>套牌位管理</h2>
+  <div id="slotList"></div>
+  <div style="text-align:center;margin-top:auto"><button class="bd-btn" id="slotsCancel">取消</button></div>
+</div>
+<div class="builder" id="builder">
+  <div class="bd-header">
+    <div class="bd-title" id="bdSideTitle">组卡</div>
+    <button class="bd-hero-btn" id="bdMainLeaderBtn">主：-</button>
+    <button class="bd-hero-btn" id="bdSubLeaderBtn">副：-</button>
+    <div class="bd-stats" id="bdStats"></div>
+    <div class="bd-tabs">
+      <button class="bd-tab active" data-tab="main">主套牌</button>
+      <button class="bd-tab" data-tab="sub">副套牌</button>
+    </div>
+  </div>
+  <div class="bd-body">
+    <div class="bd-pool" id="bdPool"></div>
+    <div class="bd-deck" id="bdDeck"></div>
+  </div>
+  <div class="bd-footer">
+    <button class="bd-btn book" id="bdBook">📖 图鉴</button>
+    <button class="bd-btn" id="bdReset" style="background:#8a5aff;color:#fff">随机填满</button>
+    <button class="bd-btn reset" id="bdCancel">取消</button>
+    <button class="bd-btn" id="bdDone" disabled>保存</button>
+  </div>
+</div>
+<button id="bookBtn" title="图鉴">📖</button>
+<div class="book" id="book">
+  <div class="bk-header">
+    <div class="bk-title">📖 卡牌图鉴</div>
+    <input class="bk-search" id="bkSearch" placeholder="搜索…">
+    <div class="bk-tabs">
+      <button class="bk-tab active" data-f="all">全部</button>
+      <button class="bk-tab" data-f="common">通用</button>
+      <button class="bk-tab" data-f="exclusive">领袖专属</button>
+      <button class="bk-tab" data-f="minion">随从</button>
+      <button class="bk-tab" data-f="spell">法术</button>
+      <button class="bk-tab" data-f="tech">科技</button>
+      <button class="bk-tab" data-f="env">环境</button>
+      <button class="bk-tab" data-f="ult">终极祝福</button>
+    </div>
+  </div>
+  <div class="bk-body" id="bkBody"></div>
+  <div class="bk-footer"><button class="bk-btn" id="bkClose">关闭</button></div>
+</div>
+<div id="game" style="display:none">
+  <div class="phase-bar" id="phaseBar">准备中…</div>
+  <div class="bar e" id="eb" onclick="clickHeroBar()">
+    <div class="av" id="eAv">👻<span class="mode-tag">主</span></div>
+    <div class="info">
+      <div class="name"><span id="eName">魔灵领袖</span></div>
+      <div>手牌 <b id="eh">0</b> · 牌库 <b id="ed">0</b> · 尸体 <b id="corpses" style="color:#a0ffa0">0</b></div>
+      <div class="mana-row" id="eManaRow"></div>
+    </div>
+    <div class="hp" id="ehp">30</div>
+    <button class="spelllog-btn" onclick="toggleSpellLog()">📜 7</button>
+  </div>
+  <div class="board"></div>
+  <div class="bar p" id="pb">
+    <div class="av" id="pAv">🧑<span class="mode-tag">主</span></div>
+    <div class="info">
+      <div class="name"><span id="pName">你</span></div>
+      <div class="mana-row" id="pManaRow"></div>
+    </div>
+    <div style="display:flex;gap:3px">
+      <button id="ingameSettings" title="设置" style="background:#666;color:#fff">⚙️</button>
+      <button id="switchBtn" title="切换领袖(2能量)">🔁</button>
+      <button id="heroSkill" title="领袖技能(2能量)">✨</button>
+      <button id="end">结束</button>
+    </div>
+    <div class="hp" id="php">30</div>
+  </div>
+  <div class="hand-area"><div class="hand" id="hand"></div></div>
+</div>
+<div class="spelllog" id="spellLog">
+  <h3>📜 最近 7 个法术</h3>
+  <div class="sl-list" id="slList"></div>
+  <button class="close" onclick="toggleSpellLog()">关闭</button>
+</div>
+<div class="ov" id="ov"><div class="res"><div class="rt" id="rt"></div><div class="rs" id="rs"></div><button class="rb" id="rb">再来一局</button></div></div>
+<div class="tip" id="tip"></div>
+<div class="battle-start-anim" id="battleStartAnim"></div>
+
+<div id="tutHighlight"></div>
+<div id="tutBubble">
+  <div class="tut-step-num" id="tutStepNum"></div>
+  <div class="tut-text" id="tutText"></div>
+  <div class="tut-btns">
+    <button class="tut-next" id="tutNext">下一步</button>
+    <button class="tut-skip" id="tutSkip">跳过教程</button>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// 卡牌数据库 · 按分类整理
+// 新增卡时直接在此处对应分类里加一条即可，同时在下方 POOL 中按需加入
+// ============================================================================
+
+const C = {
+
+  // ==========================================================================
+  // 【人类通用 · 随从】(无 side，人类/魔灵都能用)
+  // ==========================================================================
+  h_sword:{n:'剑士',cost:1,m:1,a:2,h:1,art:'⚔️',rar:2},
+  h_shield:{n:'盾兵',cost:1,m:1,a:1,h:3,art:'🛡️',rar:2},
+  h_acolyte:{n:'圣光使徒',cost:1,m:1,a:1,h:1,art:'🕯️',rar:2,k:['rally'],rally:{req:'shield',eff:{ty:'shield'}},x:'圣盾齐力：获得圣盾'},
+  h_thorn:{n:'荆棘兵',cost:1,m:1,a:1,h:2,art:'🌵',rar:2,k:['firststrike'],x:'先击'},
+  h_torch:{n:'火炬手',cost:1,m:1,a:2,h:1,art:'🔥',rar:2,k:['ignite'],x:'点燃'},
+  h_recruit:{n:'新兵',cost:1,m:1,a:1,h:2,art:'🗡️',rar:2,k:['sacrifice'],x:'献祭'},
+  h_sailor:{n:'水手',cost:1,m:1,a:0,h:3,art:'⚓',rar:3,k:['aquatic'],x:'水生'},
+  h_stone:{n:'投石兵',cost:2,m:1,a:2,h:3,art:'🪨',rar:2,k:['rally','arm'],ar:1,rally:{req:'arm',eff:{ty:'buffSelf',v:1}},x:'护甲1 · 护甲齐力：+1/+1'},
+  h_heavy:{n:'重甲兵',cost:2,m:1,a:0,h:6,art:'🛡️',rar:2,k:['arm','wall'],ar:1,x:'护甲1 · 高墙'},
+  h_double:{n:'双剑士',cost:2,m:1,a:3,h:2,art:'⚔️',rar:2},
+  h_scout:{n:'潜行兵',cost:2,m:1,a:2,h:3,art:'🌫️',rar:3,k:['mist'],x:'迷雾'},
+  h_archer:{n:'弓箭手',cost:2,m:1,a:2,h:2,art:'🏹',rar:3,k:['charge'],x:'冲锋'},
+  h_ironwall:{n:'铁壁兵',cost:2,m:1,a:0,h:5,art:'🚪',rar:3,k:['arm','wall'],ar:1,x:'护甲1 · 高墙'},
+  h_frost:{n:'冰法师',cost:2,m:1,a:2,h:3,art:'❄️',rar:3,k:['freeze'],x:'冻结'},
+  h_charger:{n:'充能兵',cost:2,m:1,a:0,h:4,art:'🔋',rar:3,k:['chargeup'],x:'蓄力'},
+  h_saint:{n:'圣女',cost:3,m:1,a:2,h:2,art:'🕊️',rar:3,k:['shield'],x:'圣盾'},
+  h_twin:{n:'双生姐妹',cost:3,m:1,a:2,h:3,art:'👯',rar:3,k:['rally'],rally:{req:'pierce',eff:{ty:'buffSelf',v:2}},x:'穿刺齐力：+2/+2'},
+  h_lancer:{n:'长矛骑士',cost:3,m:1,a:3,h:3,art:'🔱',rar:3,k:['blade'],x:'利刃'},
+  h_stalker:{n:'刺客',cost:3,m:1,a:3,h:3,art:'🗡️',rar:3,k:['hunt'],x:'追捕'},
+  h_trio:{n:'三叉戟兵',cost:3,m:1,a:3,h:3,art:'🔱',rar:3,k:['pierce'],x:'穿刺'},
+  h_dragon:{n:'龙骑',cost:4,m:1,a:4,h:4,art:'🐉',rar:5},
+  h_snap:{n:'火龙枪',cost:4,m:1,a:4,h:3,art:'🔥',rar:5,k:['firststrike'],x:'先击'},
+  h_piercer:{n:'穿刺兵',cost:4,m:1,a:3,h:3,art:'🏹',rar:5,k:['pierce'],x:'穿刺'},
+  h_melon:{n:'重锤兵',cost:5,m:1,a:5,h:5,art:'🔨',rar:5},
+  h_coconut:{n:'冲城车',cost:5,m:1,a:5,h:4,art:'🚛',rar:5,k:['charge'],x:'冲锋'},
+  h_gatl:{n:'连弩兵',cost:6,m:1,a:6,h:6,art:'🏹',rar:5,k:['multi'],x:'多重进攻'},
+  h_titan:{n:'泰坦',cost:7,m:1,a:7,h:7,art:'🗿',rar:5,k:['shield'],x:'圣盾'},
+  h_ancient:{n:'远古树精',cost:7,m:1,a:7,h:7,art:'🌳',rar:5,k:['shield','arm'],ar:1,x:'圣盾 护甲1'},
+
+  // ==========================================================================
+  // 【魔灵通用 · 随从】(无 side，人类/魔灵都能用)
+  // ==========================================================================
+  s_imp:{n:'小鬼',cost:1,m:1,a:2,h:1,art:'👺',rar:2},
+  s_minion:{n:'小魔灵',cost:1,m:1,a:1,h:1,art:'👶',rar:2,k:['multi','rally'],rally:{req:'multi',eff:{ty:'buffSelf',v:1}},x:'多重进攻 · 多重齐力：+1/+1'},
+  s_gold:{n:'金精',cost:1,m:1,a:1,h:1,art:'💰',rar:2,k:['rally'],rally:{req:'mist',eff:{ty:'buffSelf',v:1}},x:'迷雾齐力：+1/+1'},
+  s_duck:{n:'水鬼',cost:1,m:1,a:1,h:3,art:'🦆',rar:2,k:['aquatic'],x:'水生'},
+  s_bone:{n:'骸骨',cost:1,m:1,a:1,h:1,art:'💀',rar:2,k:['sacrifice'],x:'献祭'},
+  s_shield:{n:'盾甲兵',cost:2,m:1,a:1,h:6,art:'🛡️',rar:2,k:['arm','wall'],ar:1,x:'护甲1 · 高墙'},
+  s_ghost:{n:'幽灵',cost:2,m:1,a:3,h:2,art:'👻',rar:2,k:['mist'],x:'迷雾'},
+  s_burn:{n:'燃烧灵',cost:2,m:1,a:3,h:2,art:'🔥',rar:2,k:['ignite'],x:'点燃'},
+  s_charge:{n:'突进灵',cost:2,m:1,a:2,h:2,art:'⚡',rar:3,k:['charge'],x:'冲锋'},
+  s_pole:{n:'潜行灵',cost:2,m:1,a:3,h:2,art:'🦯',rar:3,k:['ambush'],x:'奇袭'},
+  s_frost:{n:'冰霜灵',cost:2,m:1,a:2,h:3,art:'🧊',rar:3,k:['freeze'],x:'冻结'},
+  s_battery:{n:'蓄能灵',cost:2,m:1,a:0,h:4,art:'🔋',rar:3,k:['chargeup'],x:'蓄力'},
+  s_ghoul:{n:'食魂魔',cost:2,m:1,a:3,h:3,art:'🧟',rar:3,corpseCost:2,x:'消耗2尸体'},
+  s_bucket:{n:'铁甲灵',cost:3,m:1,a:2,h:6,art:'🪣',rar:3,k:['arm','wall'],ar:1,x:'护甲1 · 高墙'},
+  s_gate:{n:'门卫灵',cost:3,m:1,a:2,h:5,art:'🚪',rar:3,k:['arm','wall'],ar:1,x:'护甲1 · 高墙'},
+  s_hunter:{n:'猎魂灵',cost:3,m:1,a:3,h:3,art:'🏹',rar:3,k:['hunt'],x:'追捕'},
+  s_shieldz:{n:'盾卫灵',cost:3,m:1,a:2,h:2,art:'🛡️',rar:3,k:['shield'],x:'圣盾'},
+  s_twin:{n:'双生魔',cost:3,m:1,a:2,h:3,art:'👯',rar:3,k:['rally'],rally:{req:'ambush',eff:{ty:'buffSelf',v:2}},x:'奇袭齐力：+2/+2'},
+  s_lancer:{n:'长矛魔',cost:3,m:1,a:3,h:3,art:'🔱',rar:3,k:['blade'],x:'利刃'},
+  s_ambush:{n:'偷袭魔',cost:3,m:1,a:2,h:2,art:'🥷',rar:3,k:['ambush'],x:'奇袭'},
+  s_balloon:{n:'气球魔',cost:3,m:1,a:2,h:2,art:'🎈',rar:3,k:['aquatic','ambush'],x:'水生 奇袭'},
+  s_foot:{n:'冲撞魔',cost:4,m:1,a:5,h:3,art:'🏈',rar:5,k:['multi'],x:'多重进攻'},
+  s_sled:{n:'雪橇魔',cost:4,m:1,a:4,h:3,art:'🛷',rar:5,k:['charge'],x:'冲锋'},
+  s_knight:{n:'骑士魔',cost:4,m:1,a:4,h:4,art:'🐴',rar:5,k:['shield','multi'],x:'圣盾 多重'},
+  s_dancer:{n:'舞魔',cost:4,m:1,a:4,h:5,art:'🕺',rar:5},
+  s_flamek:{n:'焰舞魔',cost:4,m:1,a:4,h:4,art:'💃',rar:5,k:['ignite'],x:'点燃'},
+  s_lich:{n:'巫妖',cost:5,m:1,a:5,h:4,art:'🧙',rar:5,k:['freeze','multi'],x:'冻结 多重'},
+  s_dk:{n:'死亡骑士',cost:6,m:1,a:6,h:6,art:'💀',rar:5},
+  s_boneking:{n:'骨王',cost:7,m:1,a:7,h:7,art:'☠️',rar:5},
+  s_titan:{n:'魔灵泰坦',cost:7,m:1,a:7,h:7,art:'👹',rar:5,k:['shield'],x:'圣盾'},
+
+  // ==========================================================================
+  // 【通用 · 法术 / 衍生】(无 side)
+  // ==========================================================================
+  h_cherry:{n:'炸弹',cost:3,art:'💣',rar:3,x:'单体4伤',tg:1,sp:{ty:'dmg',v:4}},
+  s_bungee:{n:'跳跃灵',cost:3,art:'🪂',rar:3,x:'单体4伤',tg:1,sp:{ty:'dmg',v:4}},
+  s_cata:{n:'投石魔',cost:5,art:'🪨',rar:5,x:'全体3伤',sp:{ty:'aoe',v:3}},
+
+  // ==========================================================================
+  // 【科技 · 博士D专属】(leader:doctorD)
+  // ==========================================================================
+  t_madSci:{n:'实验狂',cost:5,m:1,a:3,h:3,art:'🧑‍🔬',rar:5,tech:true,leader:'doctorD',inHand:'spellBuff',use:{ty:'attackNow'},x:'在手牌中，每用法术+1/+1 · 使用：立刻攻击一次'},
+  t_gravity:{n:'引力场',cost:2,art:'🌌',rar:3,tg:1,envCard:true,tech:true,leader:'doctorD',x:'环境：双方只能在此列出随从直到满',sp:{ty:'env',eff:{ty:'gravity'}}},
+  t_manaChg:{n:'能量充能',cost:3,art:'💎',rar:5,tech:true,leader:'doctorD',x:'能量上限+1，获得1个能量',sp:{ty:'manaCharge'}},
+  t_brainstorm:{n:'头脑风暴',cost:3,art:'🌠',rar:5,tech:true,leader:'doctorD',x:'手中牌变形为随机法术',sp:{ty:'brainstorm'}},
+  t_portal:{n:'打开传送门',cost:2,art:'🌀',rar:3,tech:true,leader:'doctorD',x:'本回合可在法术阶段使用随从',sp:{ty:'portal'}},
+  t_corpseSup:{n:'尸体补给',cost:2,art:'🧪',rar:3,tech:true,leader:'doctorD',corpseCost:2,x:'消耗2尸体，抽2张牌',sp:{ty:'draw',n:2}},
+  t_powerDrain:{n:'能力汲取',cost:3,art:'🧠',rar:5,tech:true,leader:'doctorD',x:'随机获得2张祝福',sp:{ty:'gainBlessings',n:2}},
+  t_sciGrad:{n:'科学研究生',cost:1,m:1,a:1,h:1,art:'🎓',rar:3,tech:true,leader:'doctorD',use:{ty:'gainSpell'},x:'使用：随机获得1张法术牌'},
+  t_teleport:{n:'折越机',cost:7,m:1,a:6,h:6,art:'🛸',rar:5,tech:true,leader:'doctorD',onDraw:'summonBig',x:'抽牌时，随机空线召唤5+费随从'},
+  t_techChest:{n:'科技宝箱',cost:2,art:'📦',rar:3,tech:true,leader:'doctorD',x:'抉择：升级技能 或 寻找科技',sp:{ty:'choice',opts:[
+    {id:'upgrade',n:'升级技能',art:'⬆️',x:'技能变为抽1并+1/+1'},
+    {id:'findTech',n:'寻找科技',art:'🔍',x:'抽1张科技牌'}
+  ]}},
+  t_timeWarp:{n:'时间加速',cost:3,art:'⏰',rar:3,tech:true,leader:'doctorD',x:'下回合能量上限+2',sp:{ty:'timeWarp',v:2}},
+  t_overload:{n:'过载电池',cost:2,art:'🔋',rar:3,tech:true,leader:'doctorD',x:'本回合+3能量',sp:{ty:'overload',v:3}},
+  t_accident:{n:'实验事故',cost:4,art:'☢️',rar:5,tech:true,leader:'doctorD',x:'随机消灭一个敌方随从',sp:{ty:'accident'}},
+  t_dataMine:{n:'数据挖掘',cost:2,art:'🔍',rar:3,tech:true,leader:'doctorD',x:'发现：从3张科技牌选1',sp:{ty:'discover',pool:'tech'}},
+  t_quantum:{n:'量子复制',cost:3,art:'🧬',rar:5,tech:true,leader:'doctorD',x:'随机复制手中1张牌，费用变为0',sp:{ty:'copyHand'}},
+  t_doomBot:{n:'末日机器',cost:6,m:1,a:5,h:5,art:'🤖',rar:5,tech:true,leader:'doctorD',endTurn:'doomBot',x:'回合结束：随机敌人2伤'},
+  t_nanoFix:{n:'纳米修复',cost:2,art:'💊',rar:3,tech:true,leader:'doctorD',x:'恢复5生命并抽1张牌',sp:{ty:'nanoFix'}},
+  t_onlyTech:{n:'科技核心',cost:5,m:1,a:4,h:4,art:'⚙️',rar:5,tech:true,leader:'doctorD',x:'本局战斗开始前：若主套牌全为科技牌，则本局所有科技牌-1费（双核心-2但能量锁1）'},
+
+  // ==========================================================================
+  // 【血族引领者专属】(leader:bloodLord)
+  // ==========================================================================
+  x_doomPact:{n:'同归于尽',cost:1,art:'💔',rar:3,leader:'bloodLord',x:'双方领袖生命上限-5',sp:{ty:'bothMaxHpDown',v:5}},
+  x_bloodFront:{n:'献祭前锋',cost:1,m:1,a:3,h:1,art:'🗡️',rar:3,leader:'bloodLord',k:['leaderBacklash'],use:{ty:'frontHit',v:3},x:'使用：对前方敌人3伤 · 对敌领袖造成伤害时，友方领袖生命上限-3'},
+  x_bloodBlade:{n:'血刃刺客',cost:3,m:1,a:1,h:1,art:'🩸',rar:3,leader:'bloodLord',k:['blade','ambush'],altCost:'hp',x:'利刃 奇袭 · 友方领袖满血时，改为消耗3点领袖生命使用'},
+  x_corpseBlast:{n:'尸爆',cost:2,art:'💀',rar:3,leader:'bloodLord',x:'友方领袖满血时，消耗2尸体对敌领袖造成5伤',sp:{ty:'corpseBlast',corpseCost:2,v:5}},
+  x_darkPact:{n:'黑暗契约',cost:0,art:'📜',rar:3,leader:'bloodLord',x:'抽2张牌 · 领袖上限-5 · 对自己5伤',sp:{ty:'darkPact',draw:2,backlashMaxHp:5,backlashDmg:5}},
+  x_desperateHeal:{n:'背水一战',cost:3,art:'💚',rar:5,leader:'bloodLord',x:'领袖上限-5，然后恢复全部生命',sp:{ty:'maxHpDownHeal',v:5}},
+  x_doomIdol:{n:'灾厄图腾',cost:1,m:1,a:0,h:5,art:'🗿',rar:3,leader:'bloodLord',endTurn:'maxHpDownBoth',endTurnV:2,x:'回合结束：双方领袖生命上限-2'},
+  x_bloodPact:{n:'血之契约',cost:6,m:1,a:3,h:7,art:'🩸',rar:5,leader:'bloodLord',startOfBattle:'bloodPact',x:'本局战斗开始前：使友方领袖获得：回合结束-1上限+1血+1尸体。销毁技能与副领袖'},
+  x_bloodReverse:{n:'血之逆转',cost:5,art:'💗',rar:5,leader:'bloodLord',x:'若尸体数>友方领袖血量，本局对友方领袖的生命上限减少改为等量增加',sp:{ty:'bloodReverse'}},
+
+  // ==========================================================================
+  // 【石魔专属】(leader:stoneGolem)
+  // ==========================================================================
+  s_prism:{n:'远古水晶',cost:2,art:'🔮',rar:3,leader:'stoneGolem',x:'抉择：本回合+下回合友方法术/单位-1费',sp:{ty:'choice',opts:[
+    {id:'discSpell',n:'水晶折射',art:'✨',x:'友方法术牌能耗-1'},
+    {id:'discUnit',n:'水晶共鸣',art:'💠',x:'友方单位牌能耗-1'}
+  ]}},
+  s_sympathy:{n:'同协石',cost:1,m:1,a:1,h:1,art:'🗿',rar:3,leader:'stoneGolem',k:['sympathy','adjacent_required'],x:'同协：打出后复制一张入手 · 需相邻友方'},
+  s_discountMage:{n:'减费术士',cost:1,m:1,a:1,h:1,art:'🧙',rar:3,leader:'stoneGolem',k:['firstSpellDiscount'],x:'每回合第一张法术牌-1费'},
+  s_massBuff:{n:'岩土共鸣',cost:5,art:'🪨',rar:2,leader:'stoneGolem',x:'所有友方单位+2/+3',sp:{ty:'massBuff',a:2,h:3}},
+  s_chooseBuff:{n:'二重奏',cost:2,art:'🎵',rar:2,leader:'stoneGolem',x:'抉择：友方+3血，或本回合友方+2攻',sp:{ty:'choice',opts:[
+    {id:'massHp',n:'坚壁',art:'🛡️',x:'所有友方+3血'},
+    {id:'massAtk',n:'突击',art:'⚔️',x:'本回合所有友方+2攻'}
+  ]}},
+  s_wallBuff:{n:'石化守护',cost:4,art:'🏰',rar:2,leader:'stoneGolem',x:'所有友方获得高墙和+3血',sp:{ty:'massWall'}},
+  s_growSpell:{n:'生长术',cost:3,art:'🌿',rar:5,leader:'stoneGolem',x:'友方+1/+1，洗2复制，抽1，然后牌库同名各数值+1',sp:{ty:'growSpell'}},
+
+  // ==========================================================================
+  // 【大学者专属】(leader:scholar)
+  // ==========================================================================
+  h_reverse:{n:'逆转战势',cost:5,art:'🔄',rar:5,leader:'scholar',x:'永久互换双方阶段',sp:{ty:'reverse'}},
+  h_tide:{n:'海祭司',cost:3,m:1,a:1,h:5,art:'🧜',rar:5,leader:'scholar',k:['aquatic','tideSac'],x:'水生 · 献祭4：召唤海神'},
+  h_tideOff:{n:'海祭品',cost:3,art:'🔱',rar:5,leader:'scholar',x:'创造2张海祭司',sp:{ty:'make',ids:['h_tide','h_tide']}},
+  h_tideGod:{n:'海神',cost:5,m:1,a:8,h:8,art:'🌊',rar:5,leader:'scholar',k:['aquatic'],summonOnly:true,x:'被召唤：2张海沟入牌库，海沟永久'},
+  h_seaWave:{n:'海啸',cost:2,art:'🌊',rar:3,leader:'scholar',x:'每个友方水生随从抽1牌',sp:{ty:'wave'}},
+  h_currant:{n:'洋流',cost:3,art:'❄️',rar:3,leader:'scholar',x:'冻结水路所有敌方',sp:{ty:'freezeWater'}},
+  h_trench:{n:'海沟',cost:6,art:'🌊',rar:5,leader:'scholar',side:'human',tg:1,envCard:true,summonOnly:true,x:'环境：本列变水路',sp:{ty:'env',eff:{ty:'pool'}}},
+  h_trench1:{n:'海沟',cost:1,art:'🌊',rar:5,leader:'scholar',side:'human',tg:1,envCard:true,summonOnly:true,x:'环境：本列变水路',sp:{ty:'env',eff:{ty:'pool'}}},
+  h_aquaScout:{n:'水波使者',cost:1,m:1,a:0,h:1,art:'💧',rar:2,leader:'scholar',k:['aquatic'],use:{ty:'draw',n:1},x:'水生 · 使用：抽1'},
+  h_aquaRally:{n:'潮涌战士',cost:1,m:1,a:2,h:1,art:'🌊',rar:3,leader:'scholar',k:['aquatic','rally'],rally:{req:'aquatic',eff:{ty:'buffAll',v:1}},x:'水生 · 水生齐力：所有友方+1/+1'},
+  h_envSac:{n:'净化之潮',cost:1,art:'✨',rar:5,leader:'scholar',tg:1,x:'消灭环境上的友方水生，获得1张海沟',sp:{ty:'envSacrifice'}},
+  h_aquaBuff:{n:'潮汐祭司',cost:3,m:1,a:2,h:3,art:'🔱',rar:3,leader:'scholar',onSummon:{eff:{ty:'aquaBuff',v:1}},x:'入场：所有友方水生+1/+1'},
+  h_energyTwin:{n:'双生能量',cost:7,m:1,a:5,h:3,art:'⚡',rar:5,leader:'scholar',use:{ty:'drainBoth',v:7},x:'使用：双方各扣7能量 · 本回合下一张卡再扣对方7能量'},
+
+  // ==========================================================================
+  // 【爆焰导师专属】(leader:flameMentor)
+  // ==========================================================================
+  h_jalap:{n:'火焰弹',cost:5,art:'💥',rar:5,leader:'flameMentor',x:'全体3伤',sp:{ty:'aoe',v:3}},
+  x_flameAoe:{n:'烈焰扩散',cost:2,art:'🔥',rar:3,leader:'flameMentor',x:'所有敌人1伤',sp:{ty:'aoe',v:1}},
+  x_flameDestroy:{n:'焚尽',cost:6,art:'☄️',rar:5,leader:'flameMentor',x:'消灭一个敌方，相邻受等同攻击伤害',tg:1,sp:{ty:'destroyAndSpread'}},
+  x_flameLine:{n:'火焰射线',cost:11,art:'🔥',rar:5,leader:'flameMentor',x:'每条线第一个敌人4伤',sp:{ty:'lineStrike',v:4}},
+  x_morph1:{n:'变形术',cost:1,art:'🎭',rar:3,leader:'flameMentor',tg:1,x:'将一个单位变幻为同费随机单位',sp:{ty:'morph',costPlus:0}},
+  x_morph3:{n:'混沌呼唤',cost:3,m:1,a:1,h:2,art:'🌀',rar:5,leader:'flameMentor',onSummon:{eff:{ty:'morphAll',costPlus:1}},x:'入场：所有其他单位变幻为+1费随机单位'},
+
+  // ==========================================================================
+  // 【魔灵专属 · 环境/构筑】(side:spirit)
+  // ==========================================================================
+  x_titan_wall:{n:'深渊壁垒',cost:4,m:1,a:1,h:7,art:'🧱',rar:5,side:'spirit',k:['wall'],buildPoint:50,hpCost:5,x:'打造卡牌时，点数+50，但领袖初始生命-5'},
+  s_gem_mine:{n:'宝石矿井',cost:1,m:1,a:0,h:1,art:'⛏️',rar:3,side:'spirit',endTurn:'gemMine',x:'回合结束若有友方单位更多，将一颗裂开的宝石洗入友方牌库'},
+  x_gem_rogue:{n:'传说宝石大盗',cost:6,m:1,a:4,h:4,art:'🦹',rar:5,side:'spirit',use:{ty:'gemRogue'},x:'使用：手中所有宝石变完整。集齐7种不同宝石时，将他们变成彩虹宝石'},
+
+  // ==========================================================================
+  // 【宝石系列】(side:spirit，仅通过"宝石矿井/大盗"获得)
+  // ==========================================================================
+  gem_ruby:{n:'血红宝石',cost:7,art:'🔴',rar:5,side:'spirit',x:'为你的领袖回复所有血量',sp:{ty:'healAll'}},
+  gem_haste:{n:'加速宝石',cost:5,art:'🟢',rar:5,side:'spirit',x:'抽2，加2点能量上限，加2点能量',sp:{ty:'gemHaste'}},
+  gem_pain:{n:'痛苦宝石',cost:0,art:'🟣',rar:5,side:'spirit',tg:1,x:'打6',sp:{ty:'dmg',v:6}},
+  gem_death:{n:'死亡宝石',cost:1,art:'⚫',rar:5,side:'spirit',tg:1,x:'消灭一单位',sp:{ty:'destroyUnit'}},
+  gem_copy:{n:'复制宝石',cost:3,art:'🔵',rar:5,side:'spirit',tg:1,x:'将一个友方单位的两个复制加入手牌',sp:{ty:'copyUnit'}},
+  gem_evolve:{n:'进化宝石',cost:5,art:'🟡',rar:5,side:'spirit',x:'将你手牌中的所有宝石变成完整的状态',sp:{ty:'evolveGems'}},
+  gem_legend:{n:'传说宝石',cost:5,art:'💎',rar:5,side:'spirit',x:'复制你库中的随从牌',sp:{ty:'copyDeckMinion'}},
+  gem_rainbow:{n:'彩虹宝石',cost:10,art:'🌈',rar:5,side:'spirit',noBuild:true,tg:1,x:'打999',sp:{ty:'dmg',v:999}},
+
+  // ==========================================================================
+  // 【裂开宝石】(仅显示用，不能打出)
+  // ==========================================================================
+  cracked_gem_ruby:{n:'裂开的血红宝石',cost:7,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_haste:{n:'裂开的加速宝石',cost:5,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_pain:{n:'裂开的痛苦宝石',cost:0,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_death:{n:'裂开的死亡宝石',cost:1,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_copy:{n:'裂开的复制宝石',cost:3,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_evolve:{n:'裂开的进化宝石',cost:5,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+  cracked_gem_legend:{n:'裂开的传说宝石',cost:5,art:'💔',rar:5,side:'spirit',noBuild:true,x:'需要两张相同的裂开宝石合并'},
+
+};
+
+// ============================================================================
+// 领袖数据库
+// ============================================================================
+const LEADERS = {
+  human: {
+    sunny:{n:'圣光使',art:'🧑',skill:{n:'鼓舞',eff:{ty:'draw'}},
+      ult:{id:'sunUlt',n:'圣光普照',art:'🌞',x:'恢复6点生命',eff:{ty:'heal',v:6}},
+      blessings:[{id:'inspiring',n:'鼓舞号角',art:'💪',x:'随机2个友方随从+1/+1',eff:{ty:'buffRandom',n:2}},
+                 {id:'shieldAll',n:'守护结界',art:'☀️',x:'本回合+2能量',eff:{ty:'overload',v:2}}]},
+    knight:{n:'骑士长',art:'⚔️',skill:{n:'战意',eff:{ty:'buff'}},
+      ult:{id:'knightUlt',n:'誓约冲锋',art:'🐎',x:'召唤3个2/2骑士',eff:{ty:'summon',n:3,a:2,h:2}},
+      blessings:[{id:'lance',n:'圣枪突刺',art:'🌿',x:'对敌方领袖4点伤害',eff:{ty:'face',v:4}},
+                 {id:'chargeUp',n:'集结',art:'🚩',x:'召唤3个1/1士兵',eff:{ty:'summon',n:3,a:1,h:1}}]},
+    sage:{n:'贤者',art:'🧙',skill:{n:'冥想',eff:{ty:'manaNext',v:1}},
+      ult:{id:'sageUlt',n:'秘法爆发',art:'☀️',x:'敌方领袖4伤并抽1张',eff:{ty:'faceDraw',v:4}},
+      blessings:[{id:'frost',n:'寒霜封印',art:'❄️',x:'冻结所有敌方随从',eff:{ty:'freezeAll'}},
+                 {id:'summonElem',n:'召唤元素',art:'🔥',x:'召唤2个1/3元素',eff:{ty:'summon',n:2,a:1,h:3}}]},
+    scholar:{n:'大学者',art:'📚',skill:{n:'洗牌',eff:{ty:'shuffleDraw'}},
+      ult:{id:'scholarUlt',n:'封印',art:'🔒',x:'本回合敌方手牌花费+2',eff:{ty:'enemyHandTax',v:2}},
+      blessings:[{id:'scholarLegend',n:'传说召唤',art:'✨',x:'从三张随机传说中选一入手',eff:{ty:'discoverLegendary'}},
+                 {id:'scholarFrost',n:'冰封',art:'❄️',x:'冻结一个敌方单位及其相邻单位',eff:{ty:'freezeChain'}}]},
+    flameMentor:{n:'爆焰导师',art:'🔥',skill:{n:'点燃',eff:{ty:'igniteTarget'}},
+      ult:{id:'flameUlt',n:'爆燃',art:'💥',x:'敌方领袖2伤并抽1',eff:{ty:'faceDraw',v:2}},
+      blessings:[{id:'flameBlast',n:'火焰冲击',art:'🔥',x:'对敌方领袖4点伤害',eff:{ty:'face',v:4}},
+                 {id:'flameBuff',n:'烈焰守护',art:'🛡️',x:'所有友方+2血',eff:{ty:'massHpBuff',v:2}}]},
+  },
+  spirit: {
+    reaper:{n:'摄魂使',art:'👻',skill:{n:'死亡低语',eff:{ty:'face',v:1}},
+      ult:{id:'reapUlt',n:'腐化之地',art:'☠️',x:'对所有敌方随从3伤',eff:{ty:'aoe',v:3}},
+      blessings:[{id:'toxic',n:'尸毒爆发',art:'🔥',x:'所有敌方随从2点伤害',eff:{ty:'aoe',v:2}},
+                 {id:'deathTouch',n:'死亡之触',art:'🩸',x:'对敌方领袖4点伤害',eff:{ty:'face',v:4}}]},
+    trickster:{n:'诡术灵',art:'🃏',skill:{n:'偷袭',eff:{ty:'randDmg',v:2}},
+      ult:{id:'trickUlt',n:'恶灵狂潮',art:'💀',x:'召唤2个2/2恶灵',eff:{ty:'summon',n:2,a:2,h:2}},
+      blessings:[{id:'multiAttack',n:'多重攻击',art:'🔁',x:'随机1友方获得多重进攻',eff:{ty:'giveMulti'}},
+                 {id:'panic',n:'惊慌失措',art:'😱',x:'冻结1个敌方随从',eff:{ty:'freeze1'}}]},
+    scientist:{n:'秘术师',art:'🧪',skill:{n:'超频',eff:{ty:'manaNext',v:1}},
+      ult:{id:'sciUlt',n:'秘能爆发',art:'📦',x:'获得2张随机秘术牌',eff:{ty:'gainTech',n:2}},
+      blessings:[{id:'accident',n:'实验事故',art:'☢️',x:'随机消灭一个敌方随从',eff:{ty:'accident'}},
+                 {id:'restore',n:'灵能修复',art:'💊',x:'恢复5生命并抽1张牌',eff:{ty:'faceDraw',v:0,heal:5}}]},
+    bloodLord:{n:'血族引领者',art:'🩸',skill:{n:'尸潮',eff:{ty:'gainCorpses',v:3}},
+      ult:{id:'bloodUlt',n:'血之契约',art:'❤️',x:'加5生命上限，回5血',eff:{ty:'maxHpUpHeal',maxUp:5,heal:5}},
+      blessings:[{id:'bloodCorpse',n:'尸潮',art:'💀',x:'获得10个尸体',eff:{ty:'gainCorpses',v:10}},
+                 {id:'bloodDraw',n:'血之共鸣',art:'📖',x:'抽2张牌',eff:{ty:'draw',n:2}}]},
+    stoneGolem:{n:'石魔',art:'🗿',skill:{n:'石化',eff:{ty:'destroyLowAtk',maxAtk:2}},
+      ult:{id:'stoneUlt',n:'石化领域',art:'🪨',x:'本回合所有敌方-3攻',eff:{ty:'enemyAtkDown',v:3}},
+      blessings:[{id:'stoneHeal',n:'岩壁',art:'🛡️',x:'恢复8血',eff:{ty:'heal',v:8}},
+                 {id:'stoneBuff',n:'坚韧',art:'💪',x:'抽1，一友方+2血',eff:{ty:'drawBuffHp',draw:1,hp:2}}]},
+    doctorD:{n:'博士D',art:'🤖',skill:{n:'扩容',eff:{ty:'maxManaUp',v:1}},
+      ult:{id:'docUlt',n:'超频瞬间',art:'⚡',x:'抽1，本回合+1能量',eff:{ty:'drawEnergy',draw:1,energy:1}},
+      blessings:[{id:'docDraw2',n:'数据下载',art:'📥',x:'抽2张牌',eff:{ty:'draw',n:2}},
+                 {id:'docLegend',n:'传说协议',art:'✨',x:'从3张随机传说法术选一',eff:{ty:'discoverLegendarySpell'}}]},
+  },
+};
+
+// ============================================================================
+// 词条展示信息
+// ============================================================================
+const TAGS = {
+  // 人类通用
+  h_sword:{race:'战士',kw:[]},h_shield:{race:'盾卫',kw:[]},h_acolyte:{race:'圣职',kw:['齐力']},
+  h_thorn:{race:'荆棘',kw:['先击']},h_torch:{race:'火焰',kw:['点燃']},h_recruit:{race:'新兵',kw:['献祭']},
+  h_sailor:{race:'水手',kw:['水生']},h_stone:{race:'投手',kw:['护甲','齐力']},h_heavy:{race:'重甲',kw:['护甲','墙']},
+  h_double:{race:'战士',kw:[]},h_scout:{race:'潜行',kw:['迷雾']},h_archer:{race:'射手',kw:['冲锋']},
+  h_ironwall:{race:'盾卫',kw:['护甲','墙']},h_frost:{race:'寒冰',kw:['冻结']},h_charger:{race:'机械',kw:['蓄力']},
+  h_saint:{race:'圣职',kw:['圣盾']},h_twin:{race:'双生',kw:['齐力']},h_lancer:{race:'骑士',kw:['利刃']},
+  h_stalker:{race:'刺客',kw:['追捕']},h_cherry:{race:'爆炸',kw:[]},h_trio:{race:'海族',kw:['穿刺']},
+  h_dragon:{race:'龙族',kw:[]},h_snap:{race:'火龙',kw:['先击']},h_piercer:{race:'射手',kw:['穿刺']},
+  h_melon:{race:'战士',kw:[]},h_coconut:{race:'机械',kw:['冲锋']},h_gatl:{race:'射手',kw:['多重进攻']},
+  h_titan:{race:'泰坦',kw:['圣盾']},h_ancient:{race:'树木',kw:['圣盾','护甲']},
+  // 魔灵通用
+  s_imp:{race:'小鬼',kw:[]},s_minion:{race:'魔灵',kw:['多重进攻','齐力']},s_gold:{race:'金精',kw:['齐力']},
+  s_duck:{race:'水鬼',kw:['水生']},s_bone:{race:'骸骨',kw:['献祭']},s_shield:{race:'盾卫',kw:['护甲','墙']},
+  s_ghost:{race:'幽魂',kw:['迷雾']},s_burn:{race:'火焰',kw:['点燃']},s_charge:{race:'突进',kw:['冲锋']},
+  s_pole:{race:'潜行',kw:['奇袭']},s_frost:{race:'寒冰',kw:['冻结']},s_battery:{race:'机械',kw:['蓄力']},
+  s_ghoul:{race:'食魂',kw:['尸体']},s_bucket:{race:'盾卫',kw:['护甲','墙']},s_gate:{race:'盾卫',kw:['护甲','墙']},
+  s_hunter:{race:'猎人',kw:['追捕']},s_bungee:{race:'潜行',kw:[]},s_shieldz:{race:'盾卫',kw:['圣盾']},
+  s_twin:{race:'双生',kw:['齐力']},s_lancer:{race:'战士',kw:['利刃']},s_ambush:{race:'潜行',kw:['奇袭']},
+  s_balloon:{race:'水鬼',kw:['水生','奇袭']},s_foot:{race:'冲撞',kw:['多重进攻']},s_sled:{race:'雪橇',kw:['冲锋']},
+  s_knight:{race:'骑士',kw:['圣盾','多重进攻']},s_dancer:{race:'舞者',kw:[]},s_flamek:{race:'舞者',kw:['点燃']},
+  s_cata:{race:'机械',kw:[]},s_lich:{race:'巫妖',kw:['冻结','多重进攻']},s_dk:{race:'亡灵',kw:[]},
+  s_boneking:{race:'亡灵',kw:[]},s_titan:{race:'泰坦',kw:['圣盾']},
+  // 科技
+  t_madSci:{race:'科学',kw:['在手牌']},t_gravity:{race:'科技',kw:[]},t_manaChg:{race:'科学',kw:[]},
+  t_brainstorm:{race:'科学',kw:[]},t_portal:{race:'科学',kw:[]},t_corpseSup:{race:'科学',kw:['尸体']},
+  t_powerDrain:{race:'科学',kw:[]},t_sciGrad:{race:'科学',kw:['使用']},t_teleport:{race:'机械',kw:['抽牌触发']},
+  t_techChest:{race:'科学',kw:['抉择']},t_timeWarp:{race:'科学',kw:['跳费']},t_overload:{race:'科学',kw:['跳费']},
+  t_accident:{race:'科学',kw:[]},t_dataMine:{race:'科学',kw:['发现']},t_quantum:{race:'科学',kw:['复制']},
+  t_doomBot:{race:'机械',kw:['回合结束']},t_nanoFix:{race:'科学',kw:['抽牌']},
+  t_onlyTech:{race:'科技',kw:['条件','减费']},
+  // 血族引领者
+  x_doomPact:{race:'诅咒',kw:['上限']},x_bloodFront:{race:'前锋',kw:['使用','上限']},
+  x_bloodBlade:{race:'刺客',kw:['利刃','奇袭','血祭']},x_corpseBlast:{race:'亡术',kw:['尸体','条件']},
+  x_darkPact:{race:'契约',kw:['抽牌','自伤']},x_desperateHeal:{race:'治疗',kw:['上限','满血']},
+  x_doomIdol:{race:'图腾',kw:['回合结束','上限']},x_bloodPact:{race:'契约',kw:['战斗开始','牺牲']},
+  x_bloodReverse:{race:'契约',kw:['反转上限']},
+  // 石魔
+  s_prism:{race:'水晶',kw:['抉择','折扣']},s_sympathy:{race:'石灵',kw:['同协','条件']},
+  s_discountMage:{race:'术士',kw:['减费']},s_massBuff:{race:'岩土',kw:['群攻']},
+  s_chooseBuff:{race:'岩土',kw:['抉择']},s_wallBuff:{race:'岩土',kw:['高墙']},
+  s_growSpell:{race:'生长',kw:['递增']},
+  // 大学者
+  h_reverse:{race:'时间',kw:['逆转']},h_tide:{race:'海族',kw:['水生','献祭4']},
+  h_tideOff:{race:'海族',kw:[]},h_tideGod:{race:'海族',kw:['水生','衍生']},
+  h_seaWave:{race:'海族',kw:[]},h_currant:{race:'海族',kw:['冻结']},
+  h_trench:{race:'环境',kw:['衍生']},h_trench1:{race:'环境',kw:['衍生']},
+  h_aquaScout:{race:'水生',kw:['抽牌']},h_aquaRally:{race:'水生',kw:['齐力','群体']},
+  h_envSac:{race:'水生',kw:['消灭','衍生']},h_aquaBuff:{race:'水生',kw:['群体']},
+  h_energyTwin:{race:'能量',kw:['双方','穿透']},
+  // 爆焰导师
+  h_jalap:{race:'火焰',kw:[]},x_flameAoe:{race:'火焰',kw:['群体']},
+  x_flameDestroy:{race:'火焰',kw:['消灭','扩散']},x_flameLine:{race:'火焰',kw:['穿透']},
+  x_morph1:{race:'变幻',kw:['单目标']},x_morph3:{race:'变幻',kw:['群体']},
+  // 魔灵专属构筑
+  x_titan_wall:{race:'壁垒',kw:['高墙','构筑']},s_gem_mine:{race:'宝石',kw:['衍生']},
+  x_gem_rogue:{race:'盗贼',kw:['宝石','战吼']},
+  // 宝石
+  gem_ruby:{race:'宝石',kw:['治疗']},gem_haste:{race:'宝石',kw:['加速']},
+  gem_pain:{race:'宝石',kw:['伤害']},gem_death:{race:'宝石',kw:['消灭']},
+  gem_copy:{race:'宝石',kw:['复制']},gem_evolve:{race:'宝石',kw:['进化']},
+  gem_legend:{race:'宝石',kw:['传说']},gem_rainbow:{race:'宝石',kw:['终极']},
+};
+
+// ============================================================================
+// 组卡池 · 分阵营
+// 规则：加新卡时——
+//   · 通用卡（无 side）：同时加入 human 和 spirit
+//   · 人类专属（side:'human'）：只加 human
+//   · 魔灵专属（side:'spirit'）：只加 spirit
+//   · 领袖专属（leader:xxx）：直接放入对应阵营池，组卡器会自动按领袖过滤
+// ============================================================================
+const POOL = {
+  human: [
+    // ---- 通用 · 人类随从 ----
+    'h_sword','h_shield','h_acolyte','h_thorn','h_torch','h_recruit','h_sailor',
+    'h_stone','h_heavy','h_double','h_scout','h_archer','h_ironwall','h_frost','h_charger',
+    'h_saint','h_twin','h_lancer','h_stalker','h_trio',
+    'h_dragon','h_snap','h_piercer','h_melon','h_coconut','h_gatl','h_titan','h_ancient',
+    // ---- 通用 · 魔灵随从 ----
+    's_imp','s_minion','s_gold','s_duck','s_bone','s_shield','s_ghost','s_burn','s_charge','s_pole',
+    's_frost','s_battery','s_ghoul','s_bucket','s_gate','s_hunter','s_shieldz','s_twin',
+    's_lancer','s_ambush','s_balloon','s_foot','s_sled','s_knight','s_dancer','s_flamek',
+    's_lich','s_dk','s_boneking','s_titan',
+    // ---- 通用 · 法术 ----
+    'h_cherry','s_bungee','s_cata',
+    // ---- 科技（只有 doctorD 做主/副领袖时才能加入，会被过滤） ----
+    't_madSci','t_gravity','t_manaChg','t_brainstorm','t_portal','t_corpseSup','t_powerDrain',
+    't_sciGrad','t_teleport','t_techChest','t_timeWarp','t_overload','t_accident','t_dataMine',
+    't_quantum','t_doomBot','t_nanoFix','t_onlyTech',
+    // ---- 血族引领者专属（人类用不到，会被过滤） ----
+    'x_doomPact','x_bloodFront','x_bloodBlade','x_corpseBlast','x_darkPact','x_desperateHeal','x_doomIdol','x_bloodPact','x_bloodReverse',
+    // ---- 石魔专属（人类用不到，会被过滤） ----
+    's_prism','s_sympathy','s_discountMage','s_massBuff','s_chooseBuff','s_wallBuff','s_growSpell',
+    // ---- 大学者专属 ----
+    'h_reverse','h_tide','h_tideOff','h_seaWave','h_currant',
+    'h_aquaScout','h_aquaRally','h_envSac','h_aquaBuff','h_energyTwin',
+    // ---- 爆焰导师专属 ----
+    'h_jalap','x_flameAoe','x_flameDestroy','x_flameLine','x_morph1','x_morph3',
+  ],
+  spirit: [
+    // ---- 通用 · 人类随从 ----
+    'h_sword','h_shield','h_acolyte','h_thorn','h_torch','h_recruit','h_sailor',
+    'h_stone','h_heavy','h_double','h_scout','h_archer','h_ironwall','h_frost','h_charger',
+    'h_saint','h_twin','h_lancer','h_stalker','h_trio',
+    'h_dragon','h_snap','h_piercer','h_melon','h_coconut','h_gatl','h_titan','h_ancient',
+    // ---- 通用 · 魔灵随从 ----
+    's_imp','s_minion','s_gold','s_duck','s_bone','s_shield','s_ghost','s_burn','s_charge','s_pole',
+    's_frost','s_battery','s_ghoul','s_bucket','s_gate','s_hunter','s_shieldz','s_twin',
+    's_lancer','s_ambush','s_balloon','s_foot','s_sled','s_knight','s_dancer','s_flamek',
+    's_lich','s_dk','s_boneking','s_titan',
+    // ---- 通用 · 法术 ----
+    'h_cherry','s_bungee','s_cata',
+    // ---- 科技 ----
+    't_madSci','t_gravity','t_manaChg','t_brainstorm','t_portal','t_corpseSup','t_powerDrain',
+    't_sciGrad','t_teleport','t_techChest','t_timeWarp','t_overload','t_accident','t_dataMine',
+    't_quantum','t_doomBot','t_nanoFix','t_onlyTech',
+    // ---- 血族引领者专属 ----
+    'x_doomPact','x_bloodFront','x_bloodBlade','x_corpseBlast','x_darkPact','x_desperateHeal','x_doomIdol','x_bloodPact','x_bloodReverse',
+    // ---- 石魔专属 ----
+    's_prism','s_sympathy','s_discountMage','s_massBuff','s_chooseBuff','s_wallBuff','s_growSpell',
+    // ---- 大学者专属（魔灵用不到，会被过滤） ----
+    'h_reverse','h_tide','h_tideOff','h_seaWave','h_currant',
+    'h_aquaScout','h_aquaRally','h_envSac','h_aquaBuff','h_energyTwin',
+    // ---- 爆焰导师专属（魔灵用不到，会被过滤） ----
+    'h_jalap','x_flameAoe','x_flameDestroy','x_flameLine','x_morph1','x_morph3',
+    // ---- 魔灵专属 · 构筑/环境 ----
+    'x_titan_wall','s_gem_mine','x_gem_rogue',
+    // ---- 宝石系列 ----
+    'gem_ruby','gem_haste','gem_pain','gem_death','gem_copy','gem_evolve','gem_legend','gem_rainbow',
+  ],
+};
+</script>
+<script>
+const ENV_TYPES = ['boost','drain','calm','swift'];
+const $ = s => document.querySelector(s);
+const sh = a => {for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let uid = 0;
+
+const PH = {SPIRIT_PLAY:'spirit-play',HUMAN_PLAY:'human-play',SPIRIT_SPELL:'spirit-spell',COMBAT:'combat'};
+
+const G = {
+  phase: PH.SPIRIT_PLAY, round: 0, sel: null,
+  player: null, opp: null, human: null, spirit: null,
+  playerSide: null, mainLeaderKey: null, subLeaderKey: null,
+  mainChoice: null, mainChoiceOthers: [],
+  oppMainLeaderKey: null, oppMainChoice: null, oppMainChoiceOthers: [],
+  over: false, envs: [null,null,null,null,null,null],
+  suppressClick: false, corpses: 0,
+  portalActive: {human:false,spirit:false},
+  spellLog: [], swapUsed: {}, deckMain: null, deckSub: null,
+  editingSlot: -1, currentDeck: null,
+  builderSide: 'human', builderMainLeader: 'sunny', builderSubLeader: 'knight', builderName: '',
+  reversed: false, growSpellLevel: 0, targeting: null,
+  pendingEffects: {player: [], ai: []},
+  tutorialMode: false,
+  rogue: {
+    active: false, floor: 0, maxFloor: 10,
+    deck: [], relics: [], gold: 50,
+    map: [], playerSide: 'human',
+    mainLeaderKey: null, subLeaderKey: null,
+    archetype: null, currentNode: null,
+    battleType: 'battle',
+    maxHpPenalty: 0, eventBuff: null,
+    shopStock: [],
+  }
+};
+
+// ============================================================================
+// 肉鸽体系
+// ============================================================================
+const ARCHETYPES = {
+  human: [
+    {id:'knight', n:'骑士团', art:'⚔️', desc:'高墙 · 护甲 · 齐力',
+     leaders:{main:'knight', sub:'sunny'},
+     core:['h_heavy','h_ironwall','h_stone','h_acolyte','h_saint','h_shield','h_sword','h_thorn','h_twin']},
+    {id:'mage', n:'秘术师', art:'🧙', desc:'直伤 · 冻结 · 抽牌',
+     leaders:{main:'sage', sub:'scholar'},
+     core:['h_frost','h_archer','h_cherry','h_thorn','h_scout','h_charger','h_double','h_snap','h_dragon']},
+    {id:'ocean', n:'海潮', art:'🌊', desc:'水生 · 海神 · 治疗',
+     leaders:{main:'scholar', sub:'sunny'},
+     core:['h_sailor','h_trio','h_aquaScout','h_aquaRally','h_aquaBuff','h_seaWave','h_currant','h_tide']},
+    {id:'flame', n:'爆焰', art:'🔥', desc:'点燃 · 直伤 · 变幻',
+     leaders:{main:'flameMentor', sub:'knight'},
+     core:['h_torch','h_snap','h_jalap','x_flameAoe','x_flameDestroy','x_morph1','x_morph3','h_scout','h_frost']},
+  ],
+  spirit: [
+    {id:'undead', n:'亡灵', art:'💀', desc:'献祭 · 尸体 · 血祭',
+     leaders:{main:'bloodLord', sub:'reaper'},
+     core:['s_bone','s_ghoul','s_dk','s_boneking','s_shield','s_gate','s_lancer','x_bloodFront','x_doomIdol']},
+    {id:'tech', n:'科技', art:'🤖', desc:'科技 · 变化 · 能量',
+     leaders:{main:'doctorD', sub:'scientist'},
+     core:['t_sciGrad','t_teleport','t_techChest','t_manaChg','t_brainstorm','t_overload','t_doomBot','t_quantum']},
+    {id:'flame', n:'火焰', art:'🔥', desc:'点燃 · 直伤 · 变幻',
+     leaders:{main:'scientist', sub:'trickster'},
+     core:['s_burn','s_flamek','s_lich','s_frost','s_ghost','s_charge','s_ambush','x_flameAoe','x_morph1']},
+  ]
+};
+
+const ROGUE_RELICS = [
+  {id:'hp',     n:'血之精华', art:'❤️', desc:'最大生命+10，回满'},
+  {id:'mana',   n:'能量核心', art:'⚡', desc:'每回合能量上限+1'},
+  {id:'atk',    n:'锋锐之刃', art:'⚔️', desc:'友方随从+1攻'},
+  {id:'shield', n:'守护盾',   art:'🛡️', desc:'开局友方随从+1血'},
+  {id:'gold',   n:'黄金之心', art:'💰', desc:'战斗胜利额外+10金币'},
+  {id:'draw',   n:'智慧之书', art:'📖', desc:'战斗开始额外抽1张'},
+  {id:'armor',  n:'铁甲',     art:'🧱', desc:'领袖受到伤害-1'},
+  {id:'regen',  n:'再生',     art:'🌿', desc:'每回合开始回1血'},
+];
+
+function mkPlayer(ai) {
+  return {ai,hp:30,maxHp:30,mana:0,maxMana:0,
+    deck:[],hand:[],mainDeck:[],subDeck:[],mode:'main',
+    rows:[new Array(6).fill(null),new Array(6).fill(null)],
+    fat:0,leaderUsed:false,switchedThisTurn:false,
+    spellsCast:0,skillUpgraded:false,manaNext:0,handBuff:0,
+    spellDiscount:0, spellDiscountRound:-1,
+    unitDiscount:0, unitDiscountRound:-1,
+    techDiscount:0, energyCapped:false, firstSpellDiscount:0,
+    handTax:0, handTaxRound:-1, bloodPact:false, bloodReversed:false,
+    nextCardDrain:0};
+}
+
+function dmgLeader(t,a){
+  if(G.over||a<=0)return;
+  if(t && t===G.player && G.rogue.active && G.rogue.relics.includes('armor')){
+    a = Math.max(0, a-1);
+    if(a<=0) return;
+  }
+  t.hp-=a;chkWin();
+}
+function reduceMaxHp(owner, amount) {
+  if (amount <= 0) return;
+  if (owner.bloodReversed) { owner.maxHp += amount; chkWin(); return; }
+  owner.maxHp = Math.max(1, owner.maxHp - amount);
+  if (owner.hp > owner.maxHp) owner.hp = owner.maxHp;
+  chkWin();
+}
+function isWaterLane(c){return c===5||(G.envs[c]&&G.envs[c].type==='pool');}
+
+function getEffectiveCost(owner, card) {
+  let cost = card.cost;
+  if (card.sp && card.sp.ty === 'growSpell') cost = 3 + G.growSpellLevel;
+  if (card.m && owner.unitDiscount && G.round <= owner.unitDiscountRound) cost = Math.max(0, cost - owner.unitDiscount);
+  if (!card.m && owner.spellDiscount && G.round <= owner.spellDiscountRound) cost = Math.max(0, cost - owner.spellDiscount);
+  if (card.tech && owner.techDiscount) cost = Math.max(0, cost - owner.techDiscount);
+  if (!card.m && !card.ult && owner.firstSpellDiscount > 0 && card.sp) cost = Math.max(0, cost - 1);
+  if (owner.handTax && owner.handTaxRound >= G.round) cost += owner.handTax;
+  return Math.max(0, cost);
+}
+
+function menuClick(name){toastMessage(name+'：敬请期待', '#ffd166');}
+function openBattleSub(){$('#battleSub').classList.add('show');}
+function openSettings(){
+  const inGame=$('#game').style.display!=='none'&&G.player&&!G.over;
+  $('#setSurrender').classList.toggle('disabled',!inGame);
+  $('#settingsSel').classList.add('show');
+}
+$('#setClose').onclick=()=>$('#settingsSel').classList.remove('show');
+$('#setKeywords').onclick=()=>{renderKeywords();$('#keywordBook').classList.add('show');};
+$('#kwClose').onclick=()=>$('#keywordBook').classList.remove('show');
+$('#setSurrender').onclick=()=>{
+  if($('#setSurrender').classList.contains('disabled'))return;
+  $('#settingsSel').classList.remove('show');
+  G.over=true;
+  $('#rt').textContent='投降';$('#rt').className='rt lose';$('#rs').textContent='你投降了';
+  $('#ov').classList.add('show');
+};
+$('#setExit').onclick=()=>{
+  $('#settingsSel').classList.remove('show');
+  $('#game').style.display='none';$('#menu').classList.remove('hide');
+  G.over=false; G.rogue.active=false; G.tutorialMode=false;
+  if(TUT.active){TUT.active=false;$('#tutHighlight').style.display='none';$('#tutBubble').style.display='none';}
+};
+
+function renderKeywords(){
+  const cards=$('#kwCards');cards.innerHTML='';
+  Object.keys(KEYWORDS_INFO).forEach(k=>{
+    const el=document.createElement('div');
+    el.className='pcard';el.style.width='140px';
+    el.innerHTML=`<div class="name" style="font-size:12px">${k}</div><div class="desc">${KEYWORDS_INFO[k]}</div>`;
+    cards.appendChild(el);
+  });
+}
+
+// ============================================================================
+// 新手教程
+// ============================================================================
+const TUT = {
+  active:false, step:0,
+  steps:[
+    {target:null, text:'欢迎来到「人类 vs 魔灵」！这是一款卡牌对战游戏。<br>本教程会带你快速上手，大约 1 分钟。', btn:'开始教程'},
+    {target:'#game', text:'这是战场。上方是对手（魔灵），下方是你（人类）。<br>中间的棋盘分为两排、六列，是随从战斗的地方。', btn:'下一步'},
+    {target:'#hand', text:'这是你的手牌。每张牌左上角的数字是「费用」，右下角是「攻击力 / 生命」。<br>消耗能量才能打出。', btn:'下一步'},
+    {target:'#pManaRow', text:'这是能量条。每回合能量上限 +1，打牌会消耗能量。<br>紫色点 = 当前可用能量。', btn:'下一步'},
+    {target:'#hand', text:'现在轮到你了！<br>请点选一张随从牌，再点击你自己的空位，把它放到战场上。', btn:null, wait:'minion'},
+    {target:'#end', text:'很好！出完随从后，点击「结束」把回合交给下一步。', btn:null, wait:'end'},
+    {target:'.board', text:'战斗阶段！随从会自动攻击对面同列的敌人。<br>如果该列没有敌人，就会直接攻击对方领袖。', btn:'下一步'},
+    {target:'#heroSkill', text:'这是领袖技能按钮。每回合可以花 2 点能量使用一次，效果因领袖而异。', btn:'下一步'},
+    {target:'#eb', text:'把对手领袖的生命打到 0 就赢了！<br>教程到此结束，开始你的冒险吧～', btn:'完成'},
+  ]
+};
+
+function startTutorial() {
+  if (TUT.active) return;
+  TUT.active = true; TUT.step = 0;
+  G.tutorialMode = true; G.rogue.active = false; G.over = false; G.reversed = false;
+  G.growSpellLevel = 0; G.round = 0; G.sel = null; G.targeting = null;
+  G.corpses = 0; G.spellLog = []; G.envs = [null,null,null,null,null,null];
+  $('#menu').classList.add('hide');
+  $('#game').style.display = 'flex'; $('#ov').classList.remove('show');
+  $('#battleSub').classList.remove('show'); $('#blessingChoice').classList.remove('show');
+  $('#swapWrap').classList.remove('show');
+  $('#tutHighlight').style.display = 'none'; $('#tutBubble').style.display = 'none';
+  G.playerSide = 'human'; G.mainLeaderKey = 'sunny'; G.subLeaderKey = 'knight';
+  G.human = mkPlayer(false); G.spirit = mkPlayer(true);
+  G.player = G.human; G.opp = G.spirit;
+  G.oppMainLeaderKey = 'reaper';
+  const oppLeader = LEADERS.spirit.reaper;
+  G.oppMainChoice = { kind:'ult', data: oppLeader.ult };
+  G.oppMainChoiceOthers = oppLeader.blessings.map(b => ({ kind:'blessing', data:b }));
+  G.player.hand = ['h_sword','h_shield','h_archer','h_stone'];
+  G.player.mainDeck = ['h_thorn','h_double','h_frost','h_saint','h_heavy','h_torch','h_sword','h_shield','h_acolyte','h_recruit','h_sailor','h_double','h_stone','h_torch','h_frost','h_saint','h_heavy','h_sword'];
+  G.player.subDeck = []; G.player.deck = G.player.mainDeck; G.player.mode = 'main';
+  G.opp.hand = ['s_imp','s_minion','s_bone'];
+  G.opp.mainDeck = ['s_ghost','s_shield','s_burn','s_charge','s_pole','s_frost','s_battery'];
+  G.opp.deck = G.opp.mainDeck; G.opp.mode = 'main'; G.opp.subDeck = [];
+  G.pendingEffects.player = []; G.pendingEffects.ai = [];
+  initBoard(); startRound();
+  setTimeout(() => { renderTutStep(); }, 900);
+}
+
+function renderTutStep() {
+  if (!TUT.active) return;
+  const s = TUT.steps[TUT.step];
+  if (!s) { endTutorial(); return; }
+  const bubble = $('#tutBubble'), hl = $('#tutHighlight');
+  const txt = $('#tutText'), num = $('#tutStepNum'), next = $('#tutNext');
+  if (s.target) {
+    const el = document.querySelector(s.target);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      hl.style.display = 'block';
+      hl.style.left = (r.left - 8) + 'px'; hl.style.top = (r.top - 8) + 'px';
+      hl.style.width = (r.width + 16) + 'px'; hl.style.height = (r.height + 16) + 'px';
+    } else hl.style.display = 'none';
+  } else hl.style.display = 'none';
+  num.textContent = `步骤 ${TUT.step + 1} / ${TUT.steps.length}`;
+  txt.innerHTML = s.text;
+  if (s.btn) { next.style.display = ''; next.disabled = false; next.textContent = s.btn; }
+  else next.style.display = 'none';
+  bubble.style.display = 'block';
+  positionTutBubble();
+}
+
+function positionTutBubble() {
+  const bubble = $('#tutBubble'), hl = $('#tutHighlight');
+  if (!bubble || bubble.style.display === 'none') return;
+  if (hl.style.display !== 'none') {
+    const hr = hl.getBoundingClientRect();
+    if (hr.top + hr.height / 2 > window.innerHeight / 2) { bubble.style.top = '20px'; bubble.style.bottom = 'auto'; }
+    else { bubble.style.top = 'auto'; bubble.style.bottom = '90px'; }
+  } else { bubble.style.top = 'auto'; bubble.style.bottom = '90px'; }
+}
+
+function tutNextStep() {
+  if (!TUT.active) return;
+  if (TUT.step >= TUT.steps.length - 1) { endTutorial(); return; }
+  TUT.step++; renderTutStep();
+}
+function tutOnMinionPlayed() {
+  if (TUT.active && TUT.step === 4) { TUT.step = 5; setTimeout(renderTutStep, 500); }
+}
+function tutOnEndClicked() {
+  if (TUT.active && TUT.step === 5) { TUT.step = 6; setTimeout(renderTutStep, 1400); }
+}
+function endTutorial() {
+  TUT.active = false; G.tutorialMode = false;
+  $('#tutHighlight').style.display = 'none'; $('#tutBubble').style.display = 'none';
+  toastMessage('教程完成！祝你玩得开心 🎉', '#ffd166');
+  setTimeout(() => { $('#game').style.display = 'none'; $('#menu').classList.remove('hide'); G.over = true; }, 1500);
+}
+$('#tutNext').onclick = tutNextStep;
+$('#tutSkip').onclick = endTutorial;
+window.addEventListener('resize', () => { if (TUT.active) renderTutStep(); });
+
+// ============================================================================
+// 肉鸽模式
+// ============================================================================
+function openRogueMode() {
+  G.rogue.active = false;
+  G.rogue.floor = 0;
+  G.rogue.deck = [];
+  G.rogue.relics = [];
+  G.rogue.gold = 50;
+  G.rogue.map = [];
+  G.rogue.archetype = null;
+  G.rogue.maxHpPenalty = 0;
+  G.rogue.eventBuff = null;
+  $('#rogueSideSelect').classList.add('show');
+}
+
+function initRogueRun(side) {
+  $('#rogueSideSelect').classList.remove('show');
+  G.rogue.playerSide = side;
+  showArchetypeSelect();
+}
+
+function showArchetypeSelect() {
+  const wrap = $('#rogueArchetype');
+  const inner = $('#rogueArchetypeCards');
+  inner.innerHTML = '';
+  const list = ARCHETYPES[G.rogue.playerSide];
+  $('#rogueArchetype h2').textContent = `选择「${G.rogue.playerSide==='human'?'人类':'魔灵'}」体系`;
+  $('#rogueArchetype .psel-sub').textContent = '每个体系有不同领袖和核心卡组';
+  list.forEach(arch => {
+    const ml = LEADERS[G.rogue.playerSide][arch.leaders.main];
+    const sl = LEADERS[G.rogue.playerSide][arch.leaders.sub];
+    const el = document.createElement('div');
+    el.className = 'pcard side-card';
+    el.style.width = '200px';
+    el.innerHTML = `<div class="art">${arch.art}</div>
+      <div class="name">${arch.n}</div>
+      <div class="desc">${arch.desc}<br><br>主 ${ml.n} · 副 ${sl.n}<br>核心 ${arch.core.length} 张</div>`;
+    el.onclick = () => { wrap.classList.remove('show'); startArchetypeRun(arch); };
+    inner.appendChild(el);
+  });
+  wrap.classList.add('show');
+}
+
+function startArchetypeRun(arch) {
+  G.rogue.archetype = arch;
+  G.rogue.mainLeaderKey = arch.leaders.main;
+  G.rogue.subLeaderKey = arch.leaders.sub;
+
+  const deck = [...arch.core];
+  const pool = POOL[G.rogue.playerSide].filter(id => {
+    const c = C[id];
+    if (!c || c.leader || c.summonOnly || c.noBuild) return false;
+    if (c.side && c.side !== G.rogue.playerSide) return false;
+    return true;
+  });
+  const archSet = new Set(arch.core);
+  let guard = 0;
+  while (deck.length < 20 && guard < 500) {
+    guard++;
+    const pick = pool[Math.floor(Math.random()*pool.length)];
+    if (archSet.has(pick)) continue;
+    const max = C[pick].rar === 5 ? 1 : 2;
+    if (deck.filter(x => x === pick).length >= max) continue;
+    deck.push(pick);
+  }
+  G.rogue.deck = deck;
+  generateRogueMap();
+  showRogueMap();
+}
+
+function generateRogueMap() {
+  const map = [];
+  for (let i = 0; i < 10; i++) {
+    let nodes;
+    if (i === 9) {
+      nodes = [{type:'boss', icon:'👑', name:'首领', desc:'最终决战'}];
+    } else if (i === 0) {
+      nodes = [
+        {type:'battle', icon:'⚔️', name:'普通战斗', desc:'奖励卡牌'},
+        {type:'battle', icon:'⚔️', name:'普通战斗', desc:'奖励卡牌'},
+      ];
+    } else if ((i + 1) % 3 === 0) {
+      nodes = [
+        {type:'elite', icon:'💀', name:'精英战斗', desc:'奖励遗物 + 金币'},
+        {type:'shop', icon:'🏪', name:'商店', desc:'购买卡牌/删卡'},
+      ];
+    } else {
+      nodes = [
+        {type:'battle', icon:'⚔️', name:'普通战斗', desc:'奖励卡牌'},
+        {type:'event', icon:'❓', name:'未知事件', desc:'随机效果'},
+        {type:'battle', icon:'⚔️', name:'普通战斗', desc:'奖励卡牌'},
+      ];
+    }
+    map.push(nodes);
+  }
+  G.rogue.map = map;
+}
+
+function showRogueMap() {
+  if (G.rogue.floor >= G.rogue.maxFloor) {
+    toastMessage('🏆 恭喜通关肉鸽模式！', '#ffd166');
+    G.rogue.active = false;
+    setTimeout(() => {
+      $('#rogueMap').classList.remove('show');
+      $('#menu').classList.remove('hide');
+    }, 1500);
+    return;
+  }
+  $('#menu').classList.add('hide');
+  $('#game').style.display = 'none';
+  $('#rogueArchetype').classList.remove('show');
+  $('#rogueReward').classList.remove('show');
+  $('#rogueShop').classList.remove('show');
+  $('#rogueEvent').classList.remove('show');
+  $('#rogueDeleteCard').classList.remove('show');
+  $('#rogueAdjust').classList.remove('show');
+  $('#rogueLeaderSelect').classList.remove('show');
+  $('#rogueMap').classList.add('show');
+  renderRogueMap();
+}
+
+function renderRogueMap() {
+  const floor = G.rogue.floor;
+  $('#rogueMap h2').innerHTML = `🗺 探索之旅 · 第 ${floor+1}/${G.rogue.maxFloor} 层`;
+  const relicText = G.rogue.relics.length
+    ? G.rogue.relics.map(r => ROGUE_RELICS.find(x=>x.id===r) || {art:'',n:r}).map(r=>r.art+r.n).join(' / ')
+    : '无';
+  $('#rogueStats').innerHTML = `💰 ${G.rogue.gold} 金币 · 🎴 ${G.rogue.deck.length} 张牌 · 🏺 ${relicText}`;
+
+  const nodes = $('#rogueNodes');
+  nodes.innerHTML = '';
+
+  const curNodes = G.rogue.map[floor] || [];
+  curNodes.forEach((node) => {
+    const el = document.createElement('div');
+    el.className = 'pcard side-card';
+    el.style.width = '170px';
+    el.innerHTML = `<div class="art">${node.icon}</div><div class="name">${node.name}</div><div class="desc">${node.desc}</div>`;
+    el.onclick = () => selectRogueNode(node);
+    nodes.appendChild(el);
+  });
+
+  const exitBtn = document.createElement('div');
+  exitBtn.className = 'pcard side-card';
+  exitBtn.style.width = '120px';
+  exitBtn.innerHTML = `<div class="art">🚪</div><div class="name">放弃</div><div class="desc">回主菜单</div>`;
+  exitBtn.onclick = () => {
+    if (!confirm('确定放弃本次冒险？')) return;
+    G.rogue.active = false; $('#rogueMap').classList.remove('show'); $('#menu').classList.remove('hide');
+  };
+  nodes.appendChild(exitBtn);
+}
+
+function selectRogueNode(node) {
+  G.rogue.currentNode = node;
+  $('#rogueMap').classList.remove('show');
+  if (node.type === 'battle' || node.type === 'elite' || node.type === 'boss') {
+    startRogueBattle(node.type);
+  } else if (node.type === 'shop') {
+    openRogueShop();
+  } else if (node.type === 'event') {
+    openRogueEvent();
+  }
+}
+
+function startRogueBattle(type) {
+  G.playerSide = G.rogue.playerSide;
+  G.mainLeaderKey = G.rogue.mainLeaderKey;
+  G.subLeaderKey = G.rogue.subLeaderKey;
+  G.currentDeck = {
+    name: '肉鸽卡组', side: G.playerSide,
+    mainLeaderKey: G.mainLeaderKey, subLeaderKey: G.subLeaderKey,
+    main: [...G.rogue.deck], sub: []
+  };
+  checkStartOfBattleEffects();
+  const leader = LEADERS[G.playerSide][G.mainLeaderKey];
+  G.mainChoice = { kind:'ult', data: leader.ult };
+  G.mainChoiceOthers = leader.blessings.map(b => ({kind:'blessing', data:b}));
+  G.rogue.battleType = type;
+  startSwapPhase(true);
+}
+
+function showRogueReward() {
+  $('#game').style.display = 'none';
+  $('#rogueReward').classList.add('show');
+  const bt = G.rogue.battleType || 'battle';
+  const isElite = bt === 'elite' || bt === 'boss';
+  let picks = [];
+
+  let goldGain = 15;
+  if (bt === 'elite') goldGain = 30;
+  if (bt === 'boss') goldGain = 100;
+  if (G.rogue.relics.includes('gold')) goldGain += 10;
+  G.rogue.gold += goldGain;
+
+  if (isElite) {
+    const available = ROGUE_RELICS.filter(r => !G.rogue.relics.includes(r.id));
+    sh(available);
+    picks = available.slice(0, 3);
+    $('#rogueRewardSub').textContent = `战斗胜利！+${goldGain}💰 · 选择一件遗物`;
+    if (picks.length === 0) {
+      $('#rogueRewardSub').textContent = `战斗胜利！+${goldGain}💰 · 遗物已全部收集`;
+    }
+  } else {
+    const pool = POOL[G.playerSide].filter(id => {
+      const c = C[id];
+      if (!c || c.leader || c.summonOnly || c.noBuild) return false;
+      if (c.side && c.side !== G.playerSide) return false;
+      return true;
+    });
+    sh(pool);
+    picks = pool.slice(0, 3).map(id => ({id, n: C[id].n, art: C[id].art, desc: C[id].x || '随从', isCard:true}));
+    $('#rogueRewardSub').textContent = `战斗胜利！+${goldGain}💰 · 选择一张卡牌加入卡组`;
+  }
+
+  const wrap = $('#rogueRewardCards');
+  wrap.innerHTML = '';
+  if (picks.length === 0) {
+    const el = document.createElement('div');
+    el.className = 'pcard side-card';
+    el.innerHTML = `<div class="art">➡️</div><div class="name">继续</div><div class="desc">无奖励可选</div>`;
+    el.onclick = () => {
+      G.rogue.floor++;
+      $('#rogueReward').classList.remove('show');
+      if (G.rogue.floor >= G.rogue.maxFloor) { showRogueMap(); }
+      else { showRogueMap(); }
+    };
+    wrap.appendChild(el);
+    return;
+  }
+  picks.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'pcard side-card';
+    el.innerHTML = `<div class="art">${p.art}</div><div class="name">${p.n}</div><div class="desc">${p.desc}</div>`;
+    el.onclick = () => {
+      if (isElite) { G.rogue.relics.push(p.id); }
+      else { G.rogue.deck.push(p.id); }
+      G.rogue.floor++;
+      $('#rogueReward').classList.remove('show');
+      showRogueMap();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+// -------- 商店 --------
+function openRogueShop() {
+  $('#rogueShop').classList.add('show');
+  const pool = POOL[G.playerSide].filter(id => {
+    const c = C[id];
+    if (!c || c.leader || c.summonOnly || c.noBuild) return false;
+    if (c.side && c.side !== G.playerSide) return false;
+    return true;
+  });
+  sh(pool);
+  const forSale = pool.slice(0, 3).map(id => ({
+    id, price: 15 + Math.floor(Math.random() * 15),
+  }));
+  G.rogue.shopStock = forSale;
+
+  $('#rogueShopGold').textContent = `💰 金币：${G.rogue.gold}`;
+  const cards = $('#rogueShopCards'); cards.innerHTML = '';
+  forSale.forEach((item) => {
+    const c = C[item.id];
+    const el = document.createElement('div');
+    el.className = 'pcard';
+    const canAfford = G.rogue.gold >= item.price;
+    el.style.opacity = canAfford ? '1' : '0.5';
+    el.innerHTML = `<div class="art">${c.art}</div><div class="name">${c.n}</div>
+      <div class="desc">${c.x || (c.m ? `${c.a}/${c.h}` : '')}</div>
+      <div style="margin-top:6px;color:#ffd166;font-weight:800">${item.price}💰</div>`;
+    el.onclick = () => {
+      if (G.rogue.gold < item.price) { toastMessage('金币不足', '#ff8a8a'); return; }
+      G.rogue.gold -= item.price;
+      G.rogue.deck.push(item.id);
+      toastMessage('购买成功！', '#3fa82b');
+      $('#rogueShopGold').textContent = `💰 金币：${G.rogue.gold}`;
+      el.style.opacity = '0.3'; el.onclick = null;
+    };
+    cards.appendChild(el);
+  });
+
+  const delList = $('#rogueShopDelList'); delList.innerHTML = '';
+  const deleteCost = 30;
+  const delEl = document.createElement('div');
+  delEl.className = 'pcard';
+  delEl.style.width = '200px';
+  delEl.innerHTML = `<div class="art">🗑️</div><div class="name">删卡位</div>
+    <div class="desc">选择要删除的卡牌 · ${deleteCost}💰</div>`;
+  delEl.onclick = () => {
+    if (G.rogue.gold < deleteCost) { toastMessage('金币不足', '#ff8a8a'); return; }
+    openDeleteCardDialog(deleteCost);
+  };
+  delList.appendChild(delEl);
+
+  $('#rogueShopLeave').onclick = () => {
+    $('#rogueShop').classList.remove('show');
+    G.rogue.floor++;
+    showRogueMap();
+  };
+}
+
+function openDeleteCardDialog(cost) {
+  const wrap = $('#rogueDeleteCard');
+  $('#rogueDeleteList').innerHTML = '';
+  $('#rogueDeleteSub').textContent = `每次删除消耗 ${cost}💰 · 当前金币 ${G.rogue.gold}`;
+  G.rogue.deck.forEach((id, idx) => {
+    const c = C[id]; if (!c) return;
+    const el = document.createElement('div');
+    el.className = 'pcard';
+    el.style.width = '90px';
+    el.innerHTML = `<div class="art">${c.art}</div><div class="name" style="font-size:11px">${c.n}</div>`;
+    el.onclick = () => {
+      if (G.rogue.gold < cost) { toastMessage('金币不足', '#ff8a8a'); return; }
+      G.rogue.gold -= cost;
+      G.rogue.deck.splice(idx, 1);
+      toastMessage('已删除', '#3fa82b');
+      $('#rogueShopGold').textContent = `💰 金币：${G.rogue.gold}`;
+      wrap.classList.remove('show');
+    };
+    $('#rogueDeleteList').appendChild(el);
+  });
+  $('#rogueDeleteClose').onclick = () => wrap.classList.remove('show');
+  wrap.classList.add('show');
+}
+
+// -------- 事件 --------
+function openRogueEvent() {
+  $('#rogueEvent').classList.add('show');
+  const events = [
+    {n:'治愈之泉', art:'⛲', desc:'下场战斗开始时恢复 10 点生命', apply: () => { G.rogue.eventBuff = {heal:10}; toastMessage('下次战斗额外+10生命','#3fa82b'); }},
+    {n:'神秘商人', art:'🧙', desc:'获得 40 金币', apply: () => { G.rogue.gold += 40; toastMessage('+40 金币','#ffd166'); }},
+    {n:'古代遗迹', art:'🏛️', desc:'随机获得一张稀有卡牌', apply: () => {
+      const pool = POOL[G.playerSide].filter(id => C[id] && C[id].rar === 3 && !C[id].leader && !C[id].summonOnly && !C[id].noBuild && (!C[id].side || C[id].side === G.playerSide));
+      if (pool.length) { G.rogue.deck.push(pool[Math.floor(Math.random()*pool.length)]); toastMessage('获得稀有卡！','#3fa82b'); }
+    }},
+    {n:'献祭仪式', art:'🩸', desc:'永久领袖最大生命-5，获得一件随机遗物', apply: () => {
+      const available = ROGUE_RELICS.filter(r => !G.rogue.relics.includes(r.id));
+      if (available.length) { G.rogue.relics.push(available[Math.floor(Math.random()*available.length)].id); toastMessage('获得遗物！','#ffd166'); }
+      G.rogue.maxHpPenalty = (G.rogue.maxHpPenalty||0) + 5;
+    }},
+    {n:'卡牌升级', art:'✨', desc:'随机一张卡牌变为传说卡', apply: () => {
+      const idx = Math.floor(Math.random() * G.rogue.deck.length);
+      const old = G.rogue.deck[idx]; if (!old) return;
+      const legends = POOL[G.playerSide].filter(id => C[id] && C[id].rar === 5 && !C[id].leader && !C[id].summonOnly && !C[id].noBuild && (!C[id].side || C[id].side === G.playerSide));
+      if (legends.length) { G.rogue.deck[idx] = legends[Math.floor(Math.random()*legends.length)]; toastMessage('卡牌升级！','#ffd166'); }
+    }},
+    {n:'神秘礼物', art:'🎁', desc:'获得 2 张随机卡牌', apply: () => {
+      const pool = POOL[G.playerSide].filter(id => C[id] && !C[id].leader && !C[id].summonOnly && !C[id].noBuild && (!C[id].side || C[id].side === G.playerSide));
+      for (let i=0;i<2;i++) G.rogue.deck.push(pool[Math.floor(Math.random()*pool.length)]);
+      toastMessage('+2 张卡牌','#3fa82b');
+    }},
+  ];
+  sh(events);
+  const chosen = events.slice(0, 3);
+  const wrap = $('#rogueEventChoices'); wrap.innerHTML = '';
+  chosen.forEach(ev => {
+    const el = document.createElement('div');
+    el.className = 'pcard side-card';
+    el.innerHTML = `<div class="art">${ev.art}</div><div class="name">${ev.n}</div><div class="desc">${ev.desc}</div>`;
+    el.onclick = () => {
+      ev.apply();
+      $('#rogueEvent').classList.remove('show');
+      G.rogue.floor++;
+      showRogueMap();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+// ============================================================================
+// 肉鸽 · 调整面板（换领袖 / 从套牌位加载）
+// ============================================================================
+function openRogueAdjust() {
+  const info = $('#rogueAdjustInfo');
+  const ml = LEADERS[G.rogue.playerSide][G.rogue.mainLeaderKey];
+  const sl = LEADERS[G.rogue.playerSide][G.rogue.subLeaderKey];
+  const relicNames = G.rogue.relics.length
+    ? G.rogue.relics.map(r => ROGUE_RELICS.find(x=>x.id===r)?.n || r).join(' / ')
+    : '无';
+  info.innerHTML = `
+    <div>阵营：${G.rogue.playerSide==='human'?'🧑 人类':'👻 魔灵'}</div>
+    <div>主领袖：${ml.art} ${ml.n}</div>
+    <div>副领袖：${sl.art} ${sl.n}</div>
+    <div>当前卡组：${G.rogue.deck.length} 张</div>
+    <div>💰 ${G.rogue.gold} · 🏺 ${relicNames}</div>
+  `;
+  renderRogueLoadSlots();
+  $('#rogueAdjust').classList.add('show');
+}
+
+function renderRogueLoadSlots() {
+  const wrap = $('#rogueLoadSlots');
+  wrap.innerHTML = '';
+  const slots = getSlots();
+  let anyValid = false;
+  slots.forEach((slot, i) => {
+    if (!slot || !slot.mainLeaderKey || !slot.subLeaderKey) return;
+    if (!LEADERS[slot.side] || !LEADERS[slot.side][slot.mainLeaderKey]) return;
+    if (slot.side !== G.rogue.playerSide) return;
+    anyValid = true;
+    const ml = LEADERS[slot.side][slot.mainLeaderKey];
+    const el = document.createElement('div');
+    el.className = 'pcard';
+    el.style.width = '150px';
+    el.innerHTML = `<div class="art">${ml.art}</div>
+      <div class="name">${slot.name}</div>
+      <div class="desc">${slot.main.length} 张主牌<br>主 ${ml.n}</div>`;
+    el.onclick = () => {
+      if (!confirm(`用「${slot.name}」替换当前肉鸽卡组？（当前 ${G.rogue.deck.length} 张会丢失）`)) return;
+      G.rogue.deck = [...slot.main];
+      G.rogue.mainLeaderKey = slot.mainLeaderKey;
+      G.rogue.subLeaderKey = slot.subLeaderKey;
+      toastMessage(`已加载「${slot.name}」`, '#3fa82b');
+      $('#rogueAdjust').classList.remove('show');
+      showRogueMap();
+    };
+    wrap.appendChild(el);
+  });
+  if (!anyValid) {
+    wrap.innerHTML = '<div style="opacity:.5;padding:10px;font-size:12px">没有同阵营的套牌位可用（先去「套牌」建一个）</div>';
+  }
+}
+
+function openRogueLeaderSelect() {
+  const wrap = $('#rogueLeaderSelect');
+  const cards = $('#rogueLeaderSelectCards');
+  cards.innerHTML = '';
+  $('#rogueLeaderSelectSub').textContent = `当前阵营：${G.rogue.playerSide==='human'?'🧑 人类':'👻 魔灵'} · 副领袖保留`;
+  Object.keys(LEADERS[G.rogue.playerSide]).forEach(key => {
+    if (key === G.rogue.subLeaderKey) return;
+    const l = LEADERS[G.rogue.playerSide][key];
+    const isCurrent = key === G.rogue.mainLeaderKey;
+    const el = document.createElement('div');
+    el.className = 'pcard leader-card';
+    if (isCurrent) { el.style.borderColor = '#ffd166'; el.style.background = '#2a2a1a'; }
+    el.innerHTML = `<div class="art">${l.art}</div>
+      <div class="name">${l.n}${isCurrent?' ✓ 当前':''}</div>
+      <div class="desc">技能：${l.skill.n}<br>终极：${l.ult.n}</div>`;
+    el.onclick = () => {
+      if (isCurrent) { toastMessage('已经是当前领袖', '#ffd166'); return; }
+      G.rogue.mainLeaderKey = key;
+      toastMessage(`主领袖更换为「${l.n}」`, '#3fa82b');
+      wrap.classList.remove('show');
+      openRogueAdjust();
+    };
+    cards.appendChild(el);
+  });
+  wrap.classList.add('show');
+}
+
+// 事件绑定
+$('#rogueAdjustBtn').onclick = openRogueAdjust;
+$('#rogueAdjustCancel').onclick = () => $('#rogueAdjust').classList.remove('show');
+$('#rogueLeaderSelectCancel').onclick = () => {
+  $('#rogueLeaderSelect').classList.remove('show');
+  openRogueAdjust();
+};
+
+// ============================================================================
+// 快速体验 / 自建套牌
+// ============================================================================
+function startQuickPlay() {
+  $('#battleSub').classList.remove('show');
+  const side = 'human', mainLeaderKey = 'sunny', subLeaderKey = 'knight';
+  G.currentDeck = { name:'随机套牌', side, mainLeaderKey, subLeaderKey, main: buildRandomDeck(side,30), sub: buildRandomDeck(side,10) };
+  G.playerSide = side; G.mainLeaderKey = mainLeaderKey; G.subLeaderKey = subLeaderKey;
+  checkStartOfBattleEffects();
+  const leader = LEADERS[side][mainLeaderKey];
+  G.mainChoice = { kind:'ult', data: leader.ult };
+  G.mainChoiceOthers = leader.blessings.map(b => ({kind:'blessing', data:b}));
+  startSwapPhase(false);
+}
+
+function startSinglePlayer(){G.over=false;G.rogue.active=false;G.tutorialMode=false;$('#battleSub').classList.remove('show');showDeckSelect();}
+function showDeckSelect(){
+  const wrap=$('#deckSelect'),cards=$('#deckSelectCards');
+  cards.innerHTML='';
+  const slots=getSlots();
+  let hasAny=false;
+  slots.forEach((slot,i)=>{
+    if(!slot||!slot.mainLeaderKey||!slot.subLeaderKey)return;
+    if(!LEADERS[slot.side]||!LEADERS[slot.side][slot.mainLeaderKey])return;
+    hasAny=true;
+    const ml=LEADERS[slot.side][slot.mainLeaderKey];
+    const sl=LEADERS[slot.side][slot.subLeaderKey];
+    const el=document.createElement('div');
+    el.className='pcard side-card';
+    el.innerHTML=`<div class="art">${ml.art}</div>
+      <div class="name">${slot.name}</div>
+      <div class="desc">${slot.side==='human'?'🧑 人类':'👻 魔灵'} · 主${ml.n}·副${sl.n}<br>主${slot.main.length}张·副${slot.sub.length}张</div>`;
+    el.onclick=()=>{
+      wrap.classList.remove('show');
+      G.currentDeck=slot; G.playerSide=slot.side;
+      G.mainLeaderKey=slot.mainLeaderKey; G.subLeaderKey=slot.subLeaderKey;
+      checkStartOfBattleEffects(); showBlessingChoice();
+    };
+    cards.appendChild(el);
+  });
+  const el2=document.createElement('div');
+  el2.className='pcard side-card';
+  el2.innerHTML=`<div class="art">🆕</div><div class="name">新建套牌</div><div class="desc">去建卡组</div>`;
+  el2.onclick=()=>{wrap.classList.remove('show');openDeckSlots();};
+  cards.appendChild(el2);
+  if(!hasAny){
+    const tip=document.createElement('div');
+    tip.style.cssText='color:#ff8a8a;font-size:12px;width:100%;text-align:center;margin-top:10px';
+    tip.textContent='还没有任何已建好的套牌，请点「新建套牌」创建';
+    cards.appendChild(tip);
+  }
+  wrap.classList.add('show');
+}
+
+function showBattleStartAnim(title, desc, art){
+  const el=$('#battleStartAnim');
+  el.innerHTML=`<div class="bs-art">${art||'⚔️'}</div><div class="bs-title">${title}</div><div class="bs-desc">${desc||''}</div>`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+function checkStartOfBattleEffects(){
+  G.pendingEffects.player = []; G.pendingEffects.ai = [];
+  const pReal = [...G.currentDeck.main, ...G.currentDeck.sub].filter(id => C[id]);
+  if (pReal.length) {
+    const coreCount = pReal.filter(id => id === 't_onlyTech').length;
+    const mainAllTech = G.currentDeck.main.every(id => C[id] && C[id].tech === true);
+    if (coreCount >= 1 && mainAllTech) {
+      if (coreCount >= 2) G.pendingEffects.player.push({type:'techDiscount',v:2,cap:true});
+      else G.pendingEffects.player.push({type:'techDiscount',v:1,cap:false});
+    }
+    if (pReal.some(id => id === 'x_bloodPact')) G.pendingEffects.player.push({type:'bloodPact'});
+  }
+}
+
+function checkAIStartOfBattleEffects(){
+  const opp=G.opp;
+  const realCards=[...opp.mainDeck,...opp.subDeck].filter(id=>!id.startsWith('BSEL_')&&!id.startsWith('BOTH_')&&C[id]);
+  if(!realCards.length)return;
+  const coreCount=realCards.filter(id=>id==='t_onlyTech').length;
+  const mainAllTech=opp.mainDeck.every(id=>C[id]&&C[id].tech===true);
+  if(coreCount>=1 && mainAllTech){
+    opp.techDiscount = coreCount>=2?2:1;
+    if(coreCount>=2)opp.energyCapped=true;
+    G.pendingEffects.ai.push({type:'techDiscount',v:coreCount>=2?2:1,cap:coreCount>=2});
+  }
+  if(realCards.some(id=>id==='x_bloodPact')){
+    opp.bloodPact=true;
+    G.pendingEffects.ai.push({type:'bloodPact'});
+  }
+}
+
+function showBlessingChoice(){
+  Object.keys(C).forEach(k=>{
+    if(k.startsWith('BSEL_')||k.startsWith('BOTH_')||k.startsWith('BTMP_')||k.startsWith('COPY_'))delete C[k];
+  });
+  const wrap=$('#blessingChoice'),cards=$('#bcCards');
+  const leader=LEADERS[G.playerSide][G.mainLeaderKey];
+  $('#bcTitle').textContent=`「${leader.n}」祝福三选一`;
+  $('#bcSub').textContent='选 1 张加入手牌 · 另外 2 张洗入牌库';
+  cards.innerHTML='';
+  const opts=[{kind:'ult',data:leader.ult}, ...leader.blessings.map(b=>({kind:'blessing',data:b}))];
+  opts.forEach((o,idx)=>{
+    const el=document.createElement('div');
+    el.className='pcard leader-card'+(o.kind==='ult'?' ult':'');
+    el.style.borderColor=o.kind==='ult'?'#ffb347':'#4a6a90';
+    el.innerHTML=`<div class="art">${o.data.art}</div>
+      <div class="name">${o.data.n}${o.kind==='ult'?' · 终极祝福':''}</div>
+      <div class="desc">${o.data.x}</div>`;
+    el.onclick=()=>{
+      wrap.classList.remove('show');
+      G.mainChoice=o; G.mainChoiceOthers=opts.filter((_,i)=>i!==idx);
+      startSwapPhase(false);
+    };
+    cards.appendChild(el);
+  });
+  wrap.classList.add('show');
+}
+
+// ============================================================================
+// 套牌管理
+// ============================================================================
+const SLOT_KEY='humanspirit_decks_v3';
+function getSlots(){
+  try{return JSON.parse(localStorage.getItem(SLOT_KEY))||[null,null,null,null,null];}
+  catch(e){return [null,null,null,null,null];}
+}
+function setSlots(s){localStorage.setItem(SLOT_KEY,JSON.stringify(s));}
+
+function openDeckSlots(){
+  const list=$('#slotList'); list.innerHTML='';
+  const slots=getSlots();
+  slots.forEach((slot,i)=>{
+    const el=document.createElement('div');
+    el.className='deck-slot';
+    const leaderInfo=slot&&slot.mainLeaderKey&&LEADERS[slot.side]&&LEADERS[slot.side][slot.mainLeaderKey]
+      ?`${LEADERS[slot.side][slot.mainLeaderKey].n}·${LEADERS[slot.side][slot.subLeaderKey].n}`:'';
+    el.innerHTML=`<div class="sn">${i+1}</div>
+      <div class="sname">${slot?slot.name+(leaderInfo?' ('+leaderInfo+')':''):'（空）'}</div>
+      <div class="sacts"></div>`;
+    const acts=el.querySelector('.sacts');
+    if(slot){
+      const editBtn=document.createElement('button');
+      editBtn.className='sact use';editBtn.textContent='编辑';
+      editBtn.onclick=(e)=>{
+        e.stopPropagation();
+        $('#deckSlots').classList.remove('show');
+        G.editingSlot=i; G.deckMain=[...(slot.main||[])]; G.deckSub=[...(slot.sub||[])];
+        G.builderSide=slot.side||'human';
+        G.builderMainLeader=slot.mainLeaderKey||Object.keys(LEADERS[G.builderSide])[0];
+        const otherKeys=Object.keys(LEADERS[G.builderSide]).filter(k=>k!==G.builderMainLeader);
+        G.builderSubLeader=slot.subLeaderKey||otherKeys[0]; G.builderName=slot.name;
+        openBuilder(slot.name);
+      };
+      acts.appendChild(editBtn);
+      const delBtn=document.createElement('button');
+      delBtn.className='sact del';delBtn.textContent='删除';
+      delBtn.onclick=(e)=>{e.stopPropagation();slots[i]=null;setSlots(slots);openDeckSlots();};
+      acts.appendChild(delBtn);
+    }
+    const newBtn=document.createElement('button');
+    newBtn.className='sact';newBtn.textContent=slot?'重命名':'新建';
+    newBtn.onclick=(e)=>{
+      e.stopPropagation();
+      if(slot){slots[i].name = '套牌' + (i+1);setSlots(slots);openDeckSlots();return;}
+      const n = '套牌' + (i + 1);
+      $('#deckSlots').classList.remove('show'); newDeckFlow(i, n);
+    };
+    acts.appendChild(newBtn);
+    list.appendChild(el);
+  });
+  $('#deckSlots').classList.add('show');
+}
+$('#slotsCancel').onclick=()=>$('#deckSlots').classList.remove('show');
+
+function newDeckFlow(slotIdx,deckName){
+  const wrap=$('#builderLeaderSelect'),cards=$('#blsCards');
+  G.editingSlot=slotIdx; G.deckMain=[]; G.deckSub=[]; G.builderName=deckName;
+  function renderSide(){
+    $('#blsTitle').textContent='选择阵营';
+    $('#blsSub').textContent=`套牌名：${deckName}`;
+    cards.innerHTML='';
+    [{id:'human',art:'🧑',name:'人类方',desc:'高墙 / 穿刺 / 齐力 / 水潮'},
+     {id:'spirit',art:'👻',name:'魔灵方',desc:'迷雾 / 秘术 / 献祭 / 血祭 / 宝石'}].forEach(o=>{
+      const el=document.createElement('div');
+      el.className='pcard side-card';
+      el.innerHTML=`<div class="art">${o.art}</div><div class="name">${o.name}</div><div class="desc">${o.desc}</div>`;
+      el.onclick=()=>{
+        G.builderSide=o.id;
+        const keys=Object.keys(LEADERS[o.id]);
+        G.builderMainLeader=keys[0]; G.builderSubLeader=keys[1]||keys[0];
+        renderMainLeader();
+      };
+      cards.appendChild(el);
+    });
+  }
+  function renderMainLeader(){
+    $('#blsTitle').textContent='选择主领袖';
+    $('#blsSub').textContent=`${G.builderSide==='human'?'🧑 人类':'👻 魔灵'} · 主领袖技能显示在 ✨ 按钮`;
+    cards.innerHTML='';
+    Object.keys(LEADERS[G.builderSide]).forEach(key=>{
+      const l=LEADERS[G.builderSide][key];
+      const el=document.createElement('div');
+      el.className='pcard leader-card';
+      el.innerHTML=`<div class="art">${l.art}</div><div class="name">${l.n}</div><div class="desc">技能：${l.skill.n}<br>终极：${l.ult.n}</div>`;
+      el.onclick=()=>{
+        G.builderMainLeader=key;
+        if(G.builderSubLeader===key){
+          const others=Object.keys(LEADERS[G.builderSide]).filter(k=>k!==key);
+          G.builderSubLeader=others[0]||key;
+        }
+        renderSubLeader();
+      };
+      cards.appendChild(el);
+    });
+  }
+  function renderSubLeader(){
+    $('#blsTitle').textContent='选择副领袖';
+    $('#blsSub').textContent=`主领袖：${LEADERS[G.builderSide][G.builderMainLeader].n}`;
+    cards.innerHTML='';
+    Object.keys(LEADERS[G.builderSide]).forEach(key=>{
+      if(key===G.builderMainLeader)return;
+      const l=LEADERS[G.builderSide][key];
+      const el=document.createElement('div');
+      el.className='pcard leader-card';
+      el.innerHTML=`<div class="art">${l.art}</div><div class="name">${l.n}</div><div class="desc">技能：${l.skill.n}<br>终极：${l.ult.n}</div>`;
+      el.onclick=()=>{
+        G.builderSubLeader=key;
+        wrap.classList.remove('show');
+        const slots=getSlots();
+        slots[slotIdx]={name:deckName,side:G.builderSide,mainLeaderKey:G.builderMainLeader,subLeaderKey:G.builderSubLeader,main:[],sub:[]};
+        setSlots(slots); openBuilder(deckName);
+      };
+      cards.appendChild(el);
+    });
+  }
+  renderSide(); wrap.classList.add('show');
+}
+
+// ============================================================================
+// 组卡器
+// ============================================================================
+const BD={tab:'main'};
+function bdLimit(tab){
+  let isMain = tab==='main';
+  let base = isMain ? {min:30,max:40,point:100,noR5:false} : {min:10,max:20,point:50,noR5:true};
+  if (isMain && G.deckMain.includes('x_titan_wall')) base.point += 50;
+  return base;
+}
+function bdCurArr(){return BD.tab==='main'?G.deckMain:G.deckSub;}
+function bdCount(arr,id){return arr.filter(x=>x===id).length;}
+function bdPoints(arr){return arr.reduce((s,id)=>s+((C[id] && C[id].rar)||2),0);}
+function bdMaxCount(r){return r===5?2:4;}
+function bdLeaderAllowed(c) {
+  if (!c.leader) return true;
+  if (BD.tab === 'main') return c.leader === G.builderMainLeader;
+  return c.leader === G.builderSubLeader;
+}
+function bdCanAdd(id){
+  const c=C[id];if(!c)return false;
+  if (!bdLeaderAllowed(c)) return false;
+  if (c.summonOnly) return false;
+  if (c.noBuild) return false;
+  if (c.side && c.side !== G.builderSide) return false;
+  if (id.startsWith('cracked_')) return false;
+  const arr=bdCurArr();const lim=bdLimit(BD.tab);
+  if(lim.noR5&&c.rar===5)return false;
+  if(bdCount(arr,id)>=bdMaxCount(c.rar))return false;
+  if(bdPoints(arr)+c.rar>lim.point)return false;
+  if(arr.length>=lim.max)return false;
+  return true;
+}
+function bdValid(tab){
+  const arr=tab==='main'?G.deckMain:G.deckSub;
+  const lim=bdLimit(tab);
+  if(arr.length<lim.min||arr.length>lim.max)return false;
+  if(bdPoints(arr)>lim.point)return false;
+  if(lim.noR5&&arr.some(id=>C[id] && C[id].rar===5))return false;
+  return true;
+}
+function bdMakeCard(id,count,clickFn){
+  const c=C[id];if(!c)return null;
+  const el=document.createElement('div');
+  el.className='bd-card'+(c.m?'':(c.envCard?' env':(c.tech?' tech':' sp')))
+    +(c.leader?' exclusive':'')+(c.rar===3?' r3':c.rar===5?' r5':'');
+  el.innerHTML=`<div class="cc">${c.cost}</div><div class="rar r${c.rar}">${c.rar}</div>
+    <div class="ca">${c.art}</div><div class="cn">${c.n}</div>
+    ${c.leader?`<div class="lock-badge">🔒</div>`:''}
+    ${c.m?`<div class="cs"><span class="a">${c.a}</span><span class="h">${c.h}</span></div>`:''}
+    ${count!=null&&count>0?`<div class="cnt">${count}</div>`:''}`;
+  el.onclick=clickFn;
+  bindLongPressAny(el,id);
+  return el;
+}
+function updateBuilderLeaderLabels(){
+  const ml=LEADERS[G.builderSide][G.builderMainLeader];
+  const sl=LEADERS[G.builderSide][G.builderSubLeader];
+  $('#bdMainLeaderBtn').textContent='主：'+(ml?ml.n:'-');
+  $('#bdSubLeaderBtn').textContent='副：'+(sl?sl.n:'-');
+  $('#bdSideTitle').textContent=`组卡 · ${G.builderName||''} (${G.builderSide==='human'?'🧑人类':'👻魔灵'})`;
+}
+function bdRender(){
+  const lim=bdLimit(BD.tab); const arr=bdCurArr();
+  const cnt=arr.length; const pts=bdPoints(arr);
+  const overCnt=cnt<lim.min||cnt>lim.max; const overPts=pts>lim.point;
+  $('#bdStats').innerHTML=`<span class="${overCnt?'over':''}">${cnt}(${lim.min}-${lim.max})张</span> · <span class="${overPts?'over':''}">${pts}/${lim.point}点</span>`;
+  const pool=$('#bdPool');pool.innerHTML='';
+  (POOL[G.builderSide]||[]).forEach(id=>{
+    if(!C[id])return;
+    if(C[id].noBuild)return;
+    if(!bdLeaderAllowed(C[id]))return;
+    const cnt2=bdCount(arr,id);
+    const el=bdMakeCard(id,cnt2,()=>{if(bdCanAdd(id)){bdCurArr().push(id);bdRender();}});
+    if(!bdCanAdd(id))el.classList.add('no');
+    pool.appendChild(el);
+  });
+  const deck=$('#bdDeck');deck.innerHTML='';
+  const groups={};arr.forEach(id=>{groups[id]=(groups[id]||0)+1;});
+  Object.keys(groups).forEach(id=>{
+    if(!C[id])return;
+    const el=bdMakeCard(id,groups[id],()=>{const a=bdCurArr();const i=a.indexOf(id);if(i>=0){a.splice(i,1);bdRender();}});
+    deck.appendChild(el);
+  });
+  $('#bdDone').disabled=!(bdValid('main')&&bdValid('sub'));
+}
+function openBuilder(name){
+  BD.tab='main';
+  if(!G.deckMain)G.deckMain=[]; if(!G.deckSub)G.deckSub=[];
+  G.builderName=name||'';
+  updateBuilderLeaderLabels();
+  document.querySelectorAll('.bd-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab==='main'));
+  document.querySelectorAll('.bd-tab').forEach(el=>{
+    el.onclick=()=>{
+      document.querySelectorAll('.bd-tab').forEach(t=>t.classList.remove('active'));
+      el.classList.add('active'); BD.tab=el.dataset.tab; bdRender();
+    };
+  });
+  bdRender(); $('#builder').classList.add('show');
+}
+$('#bdMainLeaderBtn').onclick=()=>{
+  if(G.deckMain.length||G.deckSub.length){G.deckMain=[];G.deckSub=[];}
+  const wrap=$('#builderLeaderSelect'),cards=$('#blsCards');
+  function renderSide(){
+    $('#blsTitle').textContent='选择阵营'; $('#blsSub').textContent='切换阵营会清空卡组';
+    cards.innerHTML='';
+    [{id:'human',art:'🧑',name:'人类方'},{id:'spirit',art:'👻',name:'魔灵方'}].forEach(o=>{
+      const el=document.createElement('div'); el.className='pcard side-card';
+      el.innerHTML=`<div class="art">${o.art}</div><div class="name">${o.name}</div>`;
+      el.onclick=()=>{
+        G.builderSide=o.id;
+        const keys=Object.keys(LEADERS[o.id]);
+        G.builderMainLeader=keys[0]; G.builderSubLeader=keys[1]||keys[0];
+        renderMainLeader();
+      };
+      cards.appendChild(el);
+    });
+  }
+  function renderMainLeader(){
+    $('#blsTitle').textContent='选择主领袖';
+    $('#blsSub').textContent=G.builderSide==='human'?'🧑 人类':'👻 魔灵';
+    cards.innerHTML='';
+    Object.keys(LEADERS[G.builderSide]).forEach(key=>{
+      const l=LEADERS[G.builderSide][key];
+      const el=document.createElement('div'); el.className='pcard leader-card';
+      el.innerHTML=`<div class="art">${l.art}</div><div class="name">${l.n}</div><div class="desc">技能：${l.skill.n}<br>终极：${l.ult.n}</div>`;
+      el.onclick=()=>{
+        G.builderMainLeader=key;
+        if(G.builderSubLeader===key){
+          const others=Object.keys(LEADERS[G.builderSide]).filter(k=>k!==key);
+          G.builderSubLeader=others[0]||key;
+        }
+        updateBuilderLeaderLabels(); bdRender(); wrap.classList.remove('show');
+      };
+      cards.appendChild(el);
+    });
+  }
+  renderSide(); wrap.classList.add('show');
+};
+$('#bdSubLeaderBtn').onclick=()=>{
+  const wrap=$('#builderLeaderSelect'),cards=$('#blsCards');
+  $('#blsTitle').textContent='选择副领袖';
+  $('#blsSub').textContent=`主领袖：${LEADERS[G.builderSide][G.builderMainLeader].n}`;
+  cards.innerHTML='';
+  Object.keys(LEADERS[G.builderSide]).forEach(key=>{
+    if(key===G.builderMainLeader)return;
+    const l=LEADERS[G.builderSide][key];
+    const el=document.createElement('div'); el.className='pcard leader-card';
+    el.innerHTML=`<div class="art">${l.art}</div><div class="name">${l.n}</div><div class="desc">技能：${l.skill.n}<br>终极：${l.ult.n}</div>`;
+    el.onclick=()=>{
+      G.builderSubLeader=key;
+      G.deckSub = G.deckSub.filter(id => { const c = C[id]; return c && (!c.leader || c.leader === key); });
+      updateBuilderLeaderLabels(); bdRender(); wrap.classList.remove('show');
+    };
+    cards.appendChild(el);
+  });
+  wrap.classList.add('show');
+};
+$('#bdReset').onclick=()=>{
+  const targetTab = BD.tab;
+  const lim = bdLimit(targetTab);
+  const arr = targetTab==='main' ? G.deckMain : G.deckSub;
+  arr.length = 0;
+  const pool = POOL[G.builderSide].filter(id => {
+    const c = C[id];
+    return c && !c.summonOnly && !c.noBuild &&
+      (!c.side || c.side === G.builderSide) &&
+      (!c.leader || c.leader === (targetTab==='main'?G.builderMainLeader:G.builderSubLeader));
+  });
+  let guard = 0;
+  while (arr.length < lim.min && guard < 3000) {
+    guard++;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const max = C[pick].rar === 5 ? 2 : 4;
+    if (arr.filter(x => x === pick).length < max && bdCanAdd(pick)) arr.push(pick);
+  }
+  bdRender();
+};
+$('#bdCancel').onclick=()=>$('#builder').classList.remove('show');
+$('#bdBook').onclick=()=>{ $('#book').classList.add('show'); bkRender(); };
+$('#bdDone').onclick=()=>{
+  if(!bdValid('main')||!bdValid('sub'))return;
+  const slots=getSlots();
+  if(G.editingSlot>=0&&slots[G.editingSlot]){
+    slots[G.editingSlot].main=[...G.deckMain]; slots[G.editingSlot].sub=[...G.deckSub];
+    slots[G.editingSlot].side=G.builderSide;
+    slots[G.editingSlot].mainLeaderKey=G.builderMainLeader;
+    slots[G.editingSlot].subLeaderKey=G.builderSubLeader;
+    setSlots(slots); toastMessage('已保存到套牌位 ' + (G.editingSlot + 1), '#3fa82b');
+  }else{
+    const idx=slots.findIndex(s=>!s);
+    if(idx<0){toastMessage('套牌位已满', '#ff6b6b');return;}
+    slots[idx]={name:G.builderName||('套牌'+(idx+1)),side:G.builderSide,mainLeaderKey:G.builderMainLeader,subLeaderKey:G.builderSubLeader,main:[...G.deckMain],sub:[...G.deckSub]};
+    setSlots(slots); toastMessage('已保存到套牌位 ' + (idx + 1), '#3fa82b');
+  }
+  $('#builder').classList.remove('show');
+};
+
+function buildRandomDeck(side, n) {
+  const pool = POOL[side].filter(id => {
+    const c = C[id];
+    if (!c || c.leader || c.summonOnly) return false;
+    if (c.noBuild) return false;
+    if (c.side && c.side !== side) return false;
+    return true;
+  });
+  if (!pool.length) return [];
+  const deck = [];
+  let guard = 0;
+  while (deck.length < n && guard < 3000) {
+    guard++;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const max = C[pick].rar === 5 ? 2 : 4;
+    if (deck.filter(x => x === pick).length < max) deck.push(pick);
+  }
+  return deck;
+}
+function initDecks(p,side){
+  p.mainDeck=sh(buildRandomDeck(side,30)); p.subDeck=sh(buildRandomDeck(side,10));
+  p.deck=p.mainDeck;p.mode='main';
+}
+
+function mkBlessingCard(side,o,prefix){
+  const cid=prefix+'_'+side+'_'+(o.data.id||('noId'+uid));
+  if(o.kind==='ult'){
+    C[cid]={n:o.data.n,cost:0,art:o.data.art,x:o.data.x,rar:5,ult:true,sp:{ty:'ult',eff:o.data.eff,side:side}};
+  }else{
+    C[cid]={n:o.data.n,cost:1,art:o.data.art,x:o.data.x,rar:3,sp:{ty:'blessing',power:o.data,side:side}};
+  }
+  return cid;
+}
+
+function applyStartOfBattleEffects(owner, effects){
+  effects.forEach((eff,i)=>{
+    if(eff.type==='techDiscount'){
+      owner.techDiscount=eff.v;
+      if(eff.cap)owner.energyCapped=true;
+      setTimeout(()=>showBattleStartAnim('⚙️ 科技核心', `${owner===G.player?'你':'对手'}：本局所有科技牌-${eff.v}费`, '⚙️'), i*1600+200);
+    }else if(eff.type==='bloodPact'){
+      owner.bloodPact=true;
+      setTimeout(()=>showBattleStartAnim('🩸 血之契约', `${owner===G.player?'你':'对手'}：每回合结束-1上限+1血+1尸体 · 禁用技能和副领袖`, '🩸'), i*1600+200);
+    }
+  });
+}
+
+// ============================================================================
+// 开始对局
+// ============================================================================
+function startSwapPhase(isRogue = false){
+  G.rogue.active = !!isRogue;
+  G.over=false; G.reversed=false; G.growSpellLevel=0;
+  G.corpses = 0; G.spellLog = []; G.tutorialMode = false;
+
+  G.human=mkPlayer(G.playerSide==='spirit');
+  G.spirit=mkPlayer(G.playerSide==='human');
+  G.player=G.playerSide==='human'?G.human:G.spirit;
+  G.opp=G.playerSide==='human'?G.spirit:G.human;
+
+  if (G.currentDeck.main.includes('x_titan_wall')) { G.player.hp -= 5; G.player.maxHp -= 5; }
+
+  if (isRogue) {
+    G.rogue.relics.forEach(r => {
+      if (r === 'hp') { G.player.maxHp += 10; G.player.hp += 10; }
+    });
+    if (G.rogue.maxHpPenalty) {
+      G.player.maxHp -= G.rogue.maxHpPenalty;
+      G.player.hp = Math.min(G.player.hp, G.player.maxHp);
+    }
+    if (G.rogue.eventBuff && G.rogue.eventBuff.heal) {
+      G.player.hp = Math.min(G.player.maxHp, G.player.hp + G.rogue.eventBuff.heal);
+      G.rogue.eventBuff = null;
+    }
+  }
+
+  const oppSide=G.playerSide==='human'?'spirit':'human';
+  const oppKeys=Object.keys(LEADERS[oppSide]);
+  G.oppMainLeaderKey=oppKeys[Math.floor(Math.random()*oppKeys.length)];
+  const oppLeader=LEADERS[oppSide][G.oppMainLeaderKey];
+  const oppOpts=[{kind:'ult',data:oppLeader.ult}, ...oppLeader.blessings.map(b=>({kind:'blessing',data:b}))];
+  const oppIdx=Math.floor(Math.random()*oppOpts.length);
+  G.oppMainChoice=oppOpts[oppIdx];
+  G.oppMainChoiceOthers=oppOpts.filter((_,i)=>i!==oppIdx);
+
+  G.player.mainDeck=[...G.currentDeck.main];
+  G.player.subDeck=[...G.currentDeck.sub];
+  const mainCardId=mkBlessingCard(G.playerSide,G.mainChoice,'BSEL');
+  G.player.hand.push(mainCardId);
+  (G.mainChoiceOthers||[]).forEach(o=>G.player.mainDeck.push(mkBlessingCard(G.playerSide,o,'BOTH')));
+  G.player.mainDeck=sh(G.player.mainDeck); G.player.subDeck=sh(G.player.subDeck);
+  G.player.deck=G.player.mainDeck; G.player.mode='main';
+
+  initDecks(G.opp,oppSide);
+  if (G.opp.mainDeck.includes('x_titan_wall')) { G.opp.hp -= 5; G.opp.maxHp -= 5; }
+
+  if (isRogue) {
+    const floorBoost = G.rogue.floor * 2;
+    const isBoss = G.rogue.battleType === 'boss';
+    const isElite = G.rogue.battleType === 'elite';
+    const extra = isBoss ? 30 : isElite ? 15 : floorBoost;
+    G.opp.maxHp += extra; G.opp.hp += extra;
+  }
+
+  checkAIStartOfBattleEffects();
+  const oppMainCardId=mkBlessingCard(oppSide,G.oppMainChoice,'BSEL');
+  G.opp.hand.push(oppMainCardId);
+  (G.oppMainChoiceOthers||[]).forEach(o=>G.opp.mainDeck.push(mkBlessingCard(oppSide,o,'BOTH')));
+  G.opp.mainDeck=sh(G.opp.mainDeck); G.opp.deck=G.opp.mainDeck;
+
+  applyStartOfBattleEffects(G.player, G.pendingEffects.player);
+  applyStartOfBattleEffects(G.opp, G.pendingEffects.ai);
+
+  for(let i=0;i<4;i++){draw(G.player);draw(G.opp);}
+  if (isRogue && G.rogue.relics.includes('draw')) { draw(G.player); }
+
+  G.swapUsed={};
+  renderSwap();
+  $('#swapWrap').classList.add('show');
+}
+function renderSwap(){
+  const own=$('#swapOwn'),opp=$('#swapOpp');
+  own.innerHTML='';opp.innerHTML='';
+  $('#swapOwnLabel').textContent=G.playerSide==='human'?'🧑 你的手牌':'👻 你的手牌';
+  $('#swapOppLabel').textContent=G.playerSide==='human'?'👻 对手手牌（不可见）':'🧑 对手手牌（不可见）';
+  G.player.hand.forEach((id,i)=>{
+    if(!id)return;
+    const c=C[id];if(!c)return;
+    const el=document.createElement('div');
+    const used=G.swapUsed[i];
+    el.className='card'+(c.m?'':' sp')+(c.ult?' ult':'')+(used?' no':'');
+    el.innerHTML=`<div class="cc">${c.cost}</div><div class="ca">${c.art}</div><div class="cn">${c.n}</div>`;
+    if(!used) el.onclick=()=>swapOneCard(i);
+    own.appendChild(el);
+  });
+  for(let i=0;i<G.opp.hand.length;i++){
+    const back=document.createElement('div');
+    back.className='card';
+    back.style.cssText='background:#1a1a2e;border-color:#333;cursor:default';
+    back.innerHTML='<div style="font-size:28px;margin-top:30px">🂠</div>';
+    opp.appendChild(back);
+  }
+}
+function swapOneCard(idx){
+  const owner=G.player;
+  if(G.swapUsed[idx])return;
+  const oldId=owner.hand[idx];
+  if(!oldId)return;
+  owner.deck.push(oldId); sh(owner.deck);
+  if(owner.deck.length>0) owner.hand[idx]=owner.deck.pop();
+  else owner.hand[idx]=null;
+  G.swapUsed[idx]=true; renderSwap();
+}
+$('#swapDone').onclick=()=>{
+  $('#swapWrap').classList.remove('show');
+  startGame();
+};
+
+function draw(p){
+  if(!p.deck.length){
+    const other=p.mode==='main'?p.subDeck:p.mainDeck;
+    if(other&&other.length){
+      if(p.mode==='main'){p.mainDeck=p.deck;p.deck=p.subDeck;p.mode='sub';}
+      else{p.subDeck=p.deck;p.deck=p.mainDeck;p.mode='main';}
+    }else{p.fat++;dmgLeader(p,p.fat);return;}
+  }
+  if(p.hand.length>=10){p.deck.pop();return;}
+  let drawn = p.deck.pop();
+  if (drawn && drawn.startsWith('gem_')) {
+    let cracked = 'cracked_' + drawn;
+    let idx = p.hand.indexOf(cracked);
+    if (idx >= 0) { p.hand.splice(idx, 1); p.hand.push(drawn); if(p === G.player) toastMessage('💎 宝石合并完成！', '#ffd166'); }
+    else p.hand.push(cracked);
+  } else p.hand.push(drawn);
+
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    const m=p.rows[r][c];
+    if(m&&C[m.id]&&C[m.id].onDraw==='summonBig')triggerSummonBig(p);
+  }
+}
+function triggerSummonBig(p){
+  const pool=[];
+  for(const id in C){
+    const cc=C[id];
+    if(cc&&cc.m&&cc.cost>=5&&!cc.envCard&&!cc.onDraw&&!cc.ult&&!cc.leader&&!cc.summonOnly)pool.push(id);
+  }
+  if(!pool.length)return;
+  const empty=[];
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++)if(!p.rows[r][c])empty.push({r,c});
+  if(!empty.length)return;
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  const slot=empty[Math.floor(Math.random()*empty.length)];
+  summonMinion(p,pick,slot.r,slot.c);
+}
+
+function mkMinion(id,override){
+  const c=C[id],k=c.k||[];
+  return {uid:++uid,id,n:c.n,cost:c.cost,rar:c.rar||2,
+    a:(override&&override.a!==undefined)?override.a:c.a,
+    h:(override&&override.h!==undefined)?override.h:c.h,
+    art:c.art||override?.art||'❓',
+    k:[...k],shield:k.includes('shield'),ar:c.ar||0,
+    burning:false,frozen:false,chargeUsed:false,
+    charged:!k.includes('chargeup'),rally:c.rally||null,
+    atkDown:0, tempAtk:0, mistRevealed:!k.includes('mist')};
+}
+function makeToken(a,h,art,name){
+  return {uid:++uid,id:'token',n:name,cost:0,rar:2,a,h,art,k:[],shield:false,ar:0,
+    burning:false,frozen:false,chargeUsed:false,charged:true,rally:null,
+    atkDown:0,tempAtk:0,mistRevealed:true};
+}
+function summonTokens(owner,n,a,h,art,name){
+  let placed=0;
+  for(let r=0;r<2&&placed<n;r++)for(let c=0;c<6&&placed<n;c++){
+    if(!owner.rows[r][c]){owner.rows[r][c]=makeToken(a,h,art,name);placed++;}
+  }
+  const opp=owner===G.human?G.spirit:G.human;
+  for(let k=placed;k<n;k++)dmgLeader(opp,2);
+}
+function summonMinion(owner,id,r,c){
+  const card=C[id];
+  if(!card||!card.m)return false;
+  const m=mkMinion(id);
+
+  if (owner === G.player && G.rogue.active) {
+    if (G.rogue.relics.includes('atk')) m.a += 1;
+    if (G.rogue.relics.includes('shield')) m.h += 1;
+  }
+  if(card.inHand==='spellBuff'){ m.a+=(owner.handBuff||0); m.h+=(owner.handBuff||0); }
+
+  owner.rows[r][c]=m;
+  if(id==='h_tideGod'){
+    for(let i=0;i<2;i++)if(owner.hand.length<10)owner.hand.push('h_trench1');
+    for(let cc=0;cc<6;cc++) if(G.envs[cc]&&G.envs[cc].type==='pool') G.envs[cc].expiresRound=9999;
+  }
+  if(card.use){
+    if(card.use.ty==='gainSpell'){
+      const spells=[];
+      for(const sid in C){const sc=C[sid];if(sc&&!sc.m&&!sc.envCard)spells.push(sid);}
+      if(spells.length&&owner.hand.length<10) owner.hand.push(spells[Math.floor(Math.random()*spells.length)]);
+    }else if(card.use.ty==='attackNow'){
+      const side=owner===G.human?'human':'spirit';
+      setTimeout(()=>doAttack(m,r,c,side),60);
+    }else if(card.use.ty==='draw'){ for(let i=0;i<card.use.n;i++)draw(owner); }
+    else if(card.use.ty==='frontHit'){
+      const opp=owner===G.human?G.spirit:G.human;
+      const trs = owner === G.human ? [1, 0] : [0, 1];
+      for(let tr of trs){const t=opp.rows[tr][c];if(t&&t.mistRevealed){applyDamage(opp,tr,c,card.use.v);break;}}
+    }else if(card.use.ty==='drainBoth'){
+      const opp=owner===G.human?G.spirit:G.human;
+      owner.mana=Math.max(0,owner.mana-card.use.v);
+      opp.mana=Math.max(0,opp.mana-card.use.v);
+      owner.nextCardDrain = card.use.v;
+    }else if(card.use.ty==='gemRogue'){
+      let gemTypes = ['gem_ruby','gem_haste','gem_pain','gem_death','gem_copy','gem_evolve','gem_legend'];
+      let hasAll = gemTypes.every(g => owner.hand.includes(g) || owner.hand.includes('cracked_'+g));
+      if (hasAll && owner.hand.length >= 7) {
+        gemTypes.forEach(g => {
+          let idx = owner.hand.indexOf(g);
+          if (idx >= 0) owner.hand.splice(idx, 1);
+          idx = owner.hand.indexOf('cracked_'+g);
+          if (idx >= 0) owner.hand.splice(idx, 1);
+        });
+        if(owner.hand.length < 10) owner.hand.push('gem_rainbow');
+        if(owner===G.player) toastMessage('🌈 集齐七龙珠！', '#c06bff');
+      } else {
+        for (let i=0; i<owner.hand.length; i++) {
+          let hid = owner.hand[i];
+          if (hid.startsWith('cracked_')) owner.hand[i] = hid.replace('cracked_', '');
+        }
+        if(owner===G.player) toastMessage('宝石修复', '#3fa82b');
+      }
+    }
+  }
+  if(card.onSummon){
+    if(card.onSummon.eff.ty==='aquaBuff'){
+      for(let r2=0;r2<2;r2++)for(let c2=0;c2<6;c2++){
+        const mm=owner.rows[r2][c2];
+        if(mm&&mm.k.includes('aquatic')){mm.a+=card.onSummon.eff.v;mm.h+=card.onSummon.eff.v;}
+      }
+    }else if(card.onSummon.eff.ty==='morphAll'){
+      morphAllUnits(owner,owner===G.human?G.spirit:G.human,card.onSummon.eff.costPlus,m.uid);
+    }
+  }
+  if(m.k.includes('sympathy')){ if(owner.hand.length<10) owner.hand.push(id); }
+  if(m.k.includes('firstSpellDiscount')){ if(owner.firstSpellDiscount<1) owner.firstSpellDiscount=1; }
+  if(m.k.includes('rally')&&card.rally)tryRally(owner,r,c,card.rally);
+  if(m.k.includes('sacrifice'))trySacrifice(owner,owner===G.human);
+  return true;
+}
+function tryRally(owner,r,c,rally){
+  const left=c-1>=0?owner.rows[r][c-1]:null;
+  const right=c+1<=5?owner.rows[r][c+1]:null;
+  if(!left||!right)return;
+  const okL = rally.req==='aquatic' ? left.k.includes('aquatic') : left.k.includes(rally.req);
+  const okR = rally.req==='aquatic' ? right.k.includes('aquatic') : right.k.includes(rally.req);
+  if(!okL||!okR)return;
+  applyRallyEffect(owner,r,c,rally.eff);
+}
+function applyRallyEffect(owner,r,c,eff){
+  if(eff.ty==='buffAll'){
+    for(let r2=0;r2<2;r2++)for(let c2=0;c2<6;c2++){const m=owner.rows[r2][c2];if(m){m.a+=eff.v;m.h+=eff.v;}}
+    return;
+  }
+  const m=owner.rows[r][c];if(!m)return;
+  if(eff.ty==='shield')m.shield=true;
+  else if(eff.ty==='buffSelf'){m.a+=eff.v||1;m.h+=eff.v||1;}
+}
+function trySacrifice(owner,isHuman){
+  let sacCount=0;
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m&&m.k.includes('sacrifice'))sacCount++;}
+  if(sacCount<2)return;
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    const m=owner.rows[r][c];
+    if(m&&m.k.includes('sacrifice')){owner.rows[r][c]=null;G.corpses++;}
+  }
+  const summonId=isHuman?'h_ancient':'s_boneking';
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    if(!owner.rows[r][c]){summonMinion(owner,summonId,r,c);return;}
+  }
+}
+function tryTideSac(owner,lastR,lastC){
+  const list=[];
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    const m=owner.rows[r][c];
+    if(m&&m.k.includes('tideSac'))list.push({r,c,m});
+  }
+  if(list.length<4)return;
+  list.sort((a,b)=>b.m.uid-a.m.uid);
+  const chosen=list.slice(0,4);
+  for(const s of chosen){owner.rows[s.r][s.c]=null;G.corpses++;}
+  let pr=lastR,pc=lastC;
+  if(owner.rows[pr][pc]){
+    let found=false;
+    for(let r=0;r<2&&!found;r++)for(let c=0;c<6;c++){if(!owner.rows[r][c]){pr=r;pc=c;found=true;break;}}
+    if(!found)return;
+  }
+  summonMinion(owner,'h_tideGod',pr,pc);
+}
+function clearFrozen(){
+  [G.human,G.spirit].forEach(p=>{
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=p.rows[r][c];if(m)m.frozen=false;}
+  });
+}
+function gravityRestrict(owner){
+  for(let c=0;c<6;c++){
+    if(G.envs[c]&&G.envs[c].type==='gravity'){
+      let empty=false;
+      for(let r=0;r<2;r++)if(!owner.rows[r][c]){empty=true;break;}
+      return empty?c:-1;
+    }
+  }
+  return -1;
+}
+
+function applyDamage(owner,r,c,amount){
+  const m=owner.rows[r][c];if(!m)return;
+  if(!m.mistRevealed)return;
+  if(m.shield){m.shield=false;return;}
+  const d=Math.max(0,amount-m.ar);
+  m.h-=d;m.charged=true;
+  if(m.h<=0){owner.rows[r][c]=null;G.corpses++;}
+}
+function combatDamage(owner,r,c,amount,deadly,ignite,freeze){
+  const m=owner.rows[r][c];if(!m)return;
+  if(!m.mistRevealed)return;
+  if(m.shield){m.shield=false;return;}
+  const d=Math.max(0,amount-m.ar);
+  m.h-=d;m.charged=true;
+  if(m.h>0){ if(ignite)m.burning=true; if(freeze&&!(G.envs[c]&&G.envs[c].type==='swift'))m.frozen=true; }
+}
+function cleanupDeaths(){
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    const h=G.human.rows[r][c]; if(h&&h.h<=0){G.human.rows[r][c]=null;G.corpses++;}
+    const s=G.spirit.rows[r][c]; if(s&&s.h<=0){G.spirit.rows[r][c]=null;G.corpses++;}
+  }
+}
+
+function morphUnit(owner, r, c, costPlus) {
+  const m = owner.rows[r][c]; if (!m) return;
+  const baseCost = m.cost + costPlus;
+  const pool = [];
+  for (const id in C) {
+    const cc = C[id];
+    if (!cc || !cc.m) continue;
+    if (cc.cost !== baseCost) continue;
+    if (cc.leader || cc.summonOnly || cc.tech) continue;
+    pool.push(id);
+  }
+  if (!pool.length) return;
+  const newId = pool[Math.floor(Math.random() * pool.length)];
+  const newM = mkMinion(newId);
+  owner.rows[r][c] = newM;
+  if (newM.k.includes('sacrifice')) trySacrifice(owner, owner === G.human);
+}
+function morphAllUnits(selfOwner, oppOwner, costPlus, excludeUid) {
+  const list = [];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) {
+    const a = selfOwner.rows[r][c];
+    if (a && a.uid !== excludeUid) list.push({o: selfOwner, r, c});
+    const b = oppOwner.rows[r][c];
+    if (b && b.uid !== excludeUid) list.push({o: oppOwner, r, c});
+  }
+  for (const {o, r, c} of list) { if (o.rows[r][c]) morphUnit(o, r, c, costPlus); }
+}
+
+function useMinion(owner,handIdx,r,c){
+  const id=owner.hand[handIdx],card=C[id];
+  if(!card||!card.m)return false;
+  if(id.startsWith('cracked_')) { if(owner===G.player) toastMessage('需要两张相同的裂开宝石合并', '#ff8a8a'); return false; }
+  if(card.summonOnly)return false;
+  if(card.k&&card.k.includes('adjacent_required')){
+    const left=c>0?owner.rows[r][c-1]:null;
+    const right=c<5?owner.rows[r][c+1]:null;
+    if(!left&&!right)return false;
+  }
+  let effCost=getEffectiveCost(owner,card);
+  let useHpPay=false;
+  if(card.altCost==='hp'&&owner.hp===owner.maxHp&&card.cost<=owner.hp){useHpPay=true;effCost=0;}
+  if(owner.mana<effCost)return false;
+  if(owner.rows[r][c])return false;
+  if(isWaterLane(c)&&!(card.k&&card.k.includes('aquatic')))return false;
+  if(card.corpseCost&&G.corpses<card.corpseCost)return false;
+  const gLane=gravityRestrict(owner);
+  if(gLane!==-1&&c!==gLane)return false;
+  if(useHpPay){owner.hp-=card.cost;chkWin();if(G.over)return false;}
+  else owner.mana-=effCost;
+  if(card.corpseCost)G.corpses-=card.corpseCost;
+  owner.hand.splice(handIdx,1);
+  if(owner.nextCardDrain>0){
+    const opp=owner===G.human?G.spirit:G.human;
+    opp.mana=Math.max(0, opp.mana-owner.nextCardDrain);
+    owner.nextCardDrain=0;
+  }
+  summonMinion(owner,id,r,c);
+  const m=owner.rows[r][c];
+  if(m&&m.k.includes('tideSac'))tryTideSac(owner,r,c);
+  if(card.use||card.onSummon||card.onDraw){
+    const anchor=document.querySelector(`.slot[data-side="${owner===G.human?'h':'s'}"][data-r="${r}"][data-c="${c}"]`);
+    showCastPopup(id,owner===G.human?'human':'spirit',anchor);
+  }
+  if(owner === G.player) tutOnMinionPlayed();
+  render(); return true;
+}
+
+function startTargeting(opts){
+  G.targeting=opts; G.sel=null;
+  setPhase(G.phase,'🎯 '+opts.desc);
+  $('#phaseBar').classList.add('targeting');
+  render();
+}
+function cancelTargeting(){
+  G.targeting=null;
+  $('#phaseBar').textContent = (G.reversed?'🔄 ':'') + '第 ' + G.round + ' 回合';
+  $('#phaseBar').classList.remove('targeting');
+  render();
+}
+function getTargetRequirement(card){
+  if(!card.sp)return null;
+  const sp=card.sp; const oppSide = G.playerSide==='human'?'s':'h';
+  if(sp.ty==='dmg'&&card.tg)return {validFn:(r,c,side)=>side===oppSide,desc:'选择目标单位', allowFace:true};
+  if(sp.ty==='destroyUnit')return {validFn:(r,c,side)=>side===oppSide,desc:'选择要消灭的敌方单位'};
+  if(sp.ty==='copyUnit')return {validFn:(r,c,side)=>{const myS = G.playerSide==='human'?'h':'s';return side===myS;},desc:'选择友方单位'};
+  if(sp.ty==='destroyAndSpread')return {validFn:(r,c,side)=>side===oppSide,desc:'选择要消灭的敌方单位'};
+  if(sp.ty==='morph')return {validFn:(r,c,side)=>side===oppSide,desc:'选择要变幻的敌方单位'};
+  if(sp.ty==='envSacrifice')return {validFn:(r,c,side)=>{
+    const myS = G.playerSide==='human'?'h':'s';
+    if(side!==myS)return false;
+    const m=G.player.rows[r][c];
+    if(!m||!m.k.includes('aquatic'))return false;
+    if(!G.envs[c])return false;
+    return true;
+  },desc:'选择环境上的友方水生'};
+  if(sp.ty==='blessing'&&sp.power&&sp.power.eff.ty==='freezeChain')return {validFn:(r,c,side)=>side===oppSide,desc:'选择要冻结的敌方单位'};
+  return null;
+}
+
+function clickHeroBar() {
+  if (!G.targeting) return;
+  if (G.targeting.onSelectFace) {
+    const fn = G.targeting.onSelectFace;
+    G.targeting = null;
+    $('#phaseBar').classList.remove('targeting');
+    fn();
+  }
+}
+
+function castSpell(owner,opp,handIdx,target){
+  const id=owner.hand[handIdx],card=C[id];
+  if(!card||card.m)return false;
+  if(id.startsWith('cracked_')) { if(owner===G.player) toastMessage('需要两张相同的裂开宝石合并', '#ff8a8a'); return false; }
+  if(card.summonOnly && !card.envCard) return false;
+  const effCost=getEffectiveCost(owner,card);
+  if(owner.mana<effCost)return false;
+  if(card.corpseCost&&G.corpses<card.corpseCost)return false;
+  if(target&&target.r!==undefined){
+    const tm=opp.rows[target.r][target.c];
+    if(tm&&!tm.mistRevealed)return false;
+  }
+  if(!target&&owner===G.player&&!owner.ai){
+    const req=getTargetRequirement(card);
+    if(req){
+      if(card.sp)card.sp._idx=handIdx;
+      startTargeting({
+        type:'card',handIdx,
+        validFn:(r,c,side)=>{
+          if(!req.validFn(r,c,side))return false;
+          const s = side==='s'?G.spirit:G.human;
+          const m = s.rows[r][c];
+          return m&&m.mistRevealed;
+        },
+        allowFace: req.allowFace, desc:req.desc,
+        onSelect:(r,c)=>{$('#phaseBar').classList.remove('targeting');castSpell(owner,opp,handIdx,{r,c});},
+        onSelectFace: req.allowFace ? () => {$('#phaseBar').classList.remove('targeting');castSpell(owner,opp,handIdx,{ty:'leader'});} : null
+      });
+      return false;
+    }
+  }
+  if(card.sp&&card.sp.ty==='corpseBlast'){
+    if(owner.hp!==owner.maxHp){ if(owner===G.player) toastMessage('❌ 需满血才能使用','#ff8a8a'); return false; }
+    if(G.corpses<card.sp.corpseCost){ if(owner===G.player) toastMessage('❌ 尸体不足','#ff8a8a'); return false; }
+  }
+  owner.mana-=effCost;
+  if(card.corpseCost)G.corpses-=card.corpseCost;
+  if(!card.ult)owner.spellsCast=(owner.spellsCast||0)+1;
+  if(!card.m&&!card.ult&&owner.firstSpellDiscount>0&&card.sp)owner.firstSpellDiscount--;
+  owner.hand.splice(handIdx,1);
+  logSpell(owner,id);
+  showCastPopup(id,owner===G.human?'human':'spirit',null);
+  if(owner.nextCardDrain>0){
+    const oo=owner===G.human?G.spirit:G.human;
+    oo.mana=Math.max(0, oo.mana-owner.nextCardDrain);
+    owner.nextCardDrain=0;
+  }
+  if(owner.hand.some(x => x === 't_madSci')) owner.handBuff = (owner.handBuff || 0) + 1;
+
+  const sp=card.sp;
+  if(!sp){chkWin();return true;}
+  if(sp.ty==='growSpell'){
+    const level=G.growSpellLevel, buff=1+level, copies=2+level, draws=1+level;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m){m.a+=buff;m.h+=buff;}}
+    for(let i=0;i<copies;i++)owner.deck.push('s_growSpell');
+    sh(owner.deck); for(let i=0;i<draws;i++)draw(owner);
+    G.growSpellLevel++; chkWin();render();return true;
+  }
+  if(sp.ty==='healAll'){ owner.hp = owner.maxHp; }
+  else if(sp.ty==='gemHaste'){
+    for(let i=0;i<2;i++)draw(owner);
+    owner.maxMana += 2; owner.mana += 2;
+    if(owner.energyCapped)owner.mana=1;
+  }
+  else if(sp.ty==='destroyUnit'&&target){ applyDamage(opp, target.r, target.c, 999); }
+  else if(sp.ty==='copyUnit'&&target){
+    const m = owner.rows[target.r][target.c];
+    if (m) { if (owner.hand.length < 10) owner.hand.push(m.id); if (owner.hand.length < 10) owner.hand.push(m.id); }
+  }
+  else if(sp.ty==='evolveGems'){
+    for (let i=0; i<owner.hand.length; i++) {
+      let hid = owner.hand[i];
+      if (hid.startsWith('cracked_')) owner.hand[i] = hid.replace('cracked_', '');
+    }
+    if(owner===G.player) toastMessage('宝石全部修复', '#3fa82b');
+  }
+  else if(sp.ty==='copyDeckMinion'){
+    const allCards = [...owner.deck, ...owner.mainDeck, ...owner.subDeck];
+    const minions = allCards.filter(id => C[id] && C[id].m && !id.startsWith('token'));
+    if (minions.length > 0 && owner.hand.length < 10) {
+      const pick = minions[Math.floor(Math.random() * minions.length)];
+      owner.hand.push(pick);
+    }
+  }
+  else if(sp.ty==='blessing'){
+    if(sp.power&&sp.power.eff.ty==='freezeChain'&&target){
+      const m=opp.rows[target.r][target.c];
+      if(m)m.frozen=true;
+      [[target.r-1,target.c],[target.r+1,target.c],[target.r,target.c-1],[target.r,target.c+1]].forEach(([nr,nc])=>{
+        if(nr>=0&&nr<2&&nc>=0&&nc<6){const mm=opp.rows[nr][nc];if(mm&&mm.mistRevealed)mm.frozen=true;}
+      });
+    }else applyBlessing(owner,opp,sp.power.eff);
+  }
+  else if(sp.ty==='ult')applyUlt(owner,opp,sp.eff);
+  else if(sp.ty==='dmg'){
+    if(target&&target.ty==='leader')dmgLeader(opp,sp.v);
+    else if(target)applyDamage(opp,target.r,target.c,sp.v);
+  }
+  else if(sp.ty==='aoe'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)applyDamage(opp,r,c,sp.v);}
+  }
+  else if(sp.ty==='destroyAndSpread'&&target){
+    const m=opp.rows[target.r][target.c];
+    if(m){
+      const atk=m.a; applyDamage(opp,target.r,target.c,999);
+      [[target.r-1,target.c],[target.r+1,target.c],[target.r,target.c-1],[target.r,target.c+1]].forEach(([nr,nc])=>{
+        if(nr>=0&&nr<2&&nc>=0&&nc<6){const mm=opp.rows[nr][nc];if(mm&&mm.mistRevealed)applyDamage(opp,nr,nc,atk);}
+      });
+    }
+  }
+  else if(sp.ty==='lineStrike'){
+    const front = owner === G.human ? 1 : 0;
+    const back  = 1 - front;
+    for(let c=0;c<6;c++){
+      if(opp.rows[front][c]&&opp.rows[front][c].mistRevealed) applyDamage(opp,front,c,sp.v);
+      else if(opp.rows[back][c]&&opp.rows[back][c].mistRevealed) applyDamage(opp,back,c,sp.v);
+    }
+  }
+  else if(sp.ty==='morph'&&target){ morphUnit(opp, target.r, target.c, sp.costPlus||0); }
+  else if(sp.ty==='envSacrifice'&&target){
+    const m = owner.rows[target.r][target.c];
+    if(m && m.k.includes('aquatic') && G.envs[target.c]){
+      G.player.rows[target.r][target.c] = null; G.corpses++;
+      if(owner.hand.length<10) owner.hand.push('h_trench1');
+    }
+  }
+  else if(sp.ty==='massBuff'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m){m.a+=sp.a;m.h+=sp.h;}}
+  }
+  else if(sp.ty==='massWall'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m){ if(!m.k.includes('wall')) m.k.push('wall'); m.h+=3; }}
+  }
+  else if(sp.ty==='env')applyEnvCard(owner,opp,sp.eff,target);
+  else if(sp.ty==='make'){for(const cid of sp.ids)if(owner.hand.length<10)owner.hand.push(cid);}
+  else if(sp.ty==='envPunish'){
+    for(let c=0;c<6;c++){
+      if(!G.envs[c])continue;
+      for(let r=0;r<2;r++){const m=opp.rows[r][c];if(m&&m.mistRevealed)applyDamage(opp,r,c,sp.v);}
+    }
+  }
+  else if(sp.ty==='wave'){
+    let aq=0;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m&&m.k.includes('aquatic'))aq++;}
+    for(let i=0;i<aq;i++)draw(owner);
+  }
+  else if(sp.ty==='freezeWater'){
+    for(let c=0;c<6;c++){
+      if(!isWaterLane(c))continue;
+      for(let r=0;r<2;r++){
+        const m=opp.rows[r][c];
+        if(m&&m.mistRevealed&&!(G.envs[c]&&G.envs[c].type==='swift'))m.frozen=true;
+      }
+    }
+  }
+  else if(sp.ty==='draw'){for(let i=0;i<sp.n;i++)draw(owner);}
+  else if(sp.ty==='gainBlessings'){
+    for(let i=0;i<sp.n;i++){
+      const side = owner===G.human ? 'human' : 'spirit';
+      let key;
+      if (side === 'human') key = G.playerSide === 'human' ? G.mainLeaderKey : G.oppMainLeaderKey;
+      else key = G.playerSide === 'spirit' ? G.mainLeaderKey : G.oppMainLeaderKey;
+      const leader = LEADERS[side][key];
+      if(!leader)continue;
+      const pick=leader.blessings[Math.floor(Math.random()*leader.blessings.length)];
+      const cid='BTMP_'+pick.id+'_'+uid;
+      C[cid]={n:pick.n,cost:1,art:pick.art,x:pick.x,rar:3,sp:{ty:'blessing',power:pick}};
+      if(owner.hand.length<10)owner.hand.push(cid);
+    }
+  }
+  else if(sp.ty==='bothMaxHpDown'){ reduceMaxHp(G.human,sp.v); reduceMaxHp(G.spirit,sp.v); }
+  else if(sp.ty==='corpseBlast'){ G.corpses-=sp.corpseCost; dmgLeader(opp,sp.v); }
+  else if(sp.ty==='darkPact'){ for(let i=0;i<sp.draw;i++)draw(owner); reduceMaxHp(owner,sp.backlashMaxHp); if(!G.over)dmgLeader(owner,sp.backlashDmg); }
+  else if(sp.ty==='maxHpDownHeal'){ reduceMaxHp(owner,sp.v); if(!G.over)owner.hp=owner.maxHp; }
+  else if(sp.ty==='bloodReverse'){
+    if(G.corpses > owner.hp){ owner.bloodReversed = true; toastMessage('💗 血之逆转发动！','#c06bff'); }
+    else if(owner === G.player) toastMessage('❌ 尸体数需大于血量', '#ff8a8a');
+  }
+  else if(sp.ty==='reverse'){
+    if(!G.reversed){
+      G.reversed=true;
+      toastMessage('🔄 逆转战势发动！阶段顺序已互换', '#c06bff');
+      // ★ 修复：逆转后如果轮到对手，立即触发 AI，避免卡死
+      if(!G.over){
+        const newActive = activeSide();
+        if(newActive && newActive !== G.playerSide){
+          const theOwner = newActive==='human'?G.human:G.spirit;
+          if(theOwner && theOwner.ai) setTimeout(aiPlayStep, 700);
+        }
+      }
+    }
+  }
+  else if(['timeWarp','overload','accident','discover','copyHand','nanoFix','manaCharge','brainstorm','portal'].includes(sp.ty)){
+    castTechSpell(owner,opp,sp);
+  }
+  else if(sp.ty==='choice'){
+    if(owner.ai){ applyChoiceEffect(owner, sp.opts[Math.floor(Math.random()*sp.opts.length)]); }
+    else showChoice(sp,owner,opp);
+  }
+  chkWin(); return true;
+}
+function castTechSpell(owner,opp,sp){
+  if(sp.ty==='timeWarp')owner.manaNext=(owner.manaNext||0)+sp.v;
+  else if(sp.ty==='overload'){ owner.mana+=sp.v; if(owner.energyCapped)owner.mana=1; }
+  else if(sp.ty==='accident'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];applyDamage(opp,t.r,t.c,999);}
+  }
+  else if(sp.ty==='discover'){
+    const pool=[];
+    for(const id in C){const cc=C[id];if(sp.pool==='tech'&&cc&&cc.tech&&cc.cost<=5)pool.push(id);}
+    sh(pool); const picks=pool.slice(0,3);
+    if(owner.ai){if(picks.length&&owner.hand.length<10)owner.hand.push(picks[0]);}
+    else showDiscover(picks,owner);
+  }
+  else if(sp.ty==='copyHand'){
+    if(owner.hand.length){
+      const pick=owner.hand[Math.floor(Math.random()*owner.hand.length)];
+      const cid='COPY_'+pick+'_'+uid;
+      C[cid]=Object.assign({},C[pick],{cost:0});
+      if(owner.hand.length<10)owner.hand.push(cid);
+    }
+  }
+  else if(sp.ty==='nanoFix'){ owner.hp=Math.min(owner.maxHp,owner.hp+5); draw(owner); }
+  else if(sp.ty==='manaCharge'){
+    owner.maxMana=owner.maxMana+1; if(owner.energyCapped)owner.maxMana=1;
+    owner.mana+=1; if(owner.energyCapped)owner.mana=1;
+  }
+  else if(sp.ty==='brainstorm'){
+    for(let i=0;i<owner.hand.length;i++){
+      const spells=[];
+      for(const sid in C){const sc=C[sid];if(sc&&!sc.m&&!sc.envCard)spells.push(sid);}
+      if(spells.length)owner.hand[i]=spells[Math.floor(Math.random()*spells.length)];
+    }
+  }
+  else if(sp.ty==='portal'){
+    if(owner===G.human)G.portalActive.human=true;
+    else G.portalActive.spirit=true;
+  }
+}
+function showDiscover(picks,owner){
+  const wrap=$('#genericSel');
+  $('#gsTitle').textContent='发现一张牌'; $('#gsSub').textContent='选择一张加入手牌';
+  const cards=$('#gsCards');cards.innerHTML='';
+  picks.forEach(pid=>{
+    const c=C[pid];if(!c)return;
+    const el=document.createElement('div'); el.className='pcard';
+    el.innerHTML=`<div class="art">${c.art}</div><div class="name">${c.n}</div><div class="desc">${c.x||('费用 '+c.cost)}</div>`;
+    el.onclick=()=>{wrap.classList.remove('show');if(owner.hand.length<10)owner.hand.push(pid);render();};
+    cards.appendChild(el);
+  });
+  wrap.classList.add('show');
+}
+function showChoice(sp,owner,opp){
+  const wrap=$('#genericSel');
+  $('#gsTitle').textContent='抉择'; $('#gsSub').textContent='选择一项效果';
+  const cards=$('#gsCards');cards.innerHTML='';
+  sp.opts.forEach(opt=>{
+    const el=document.createElement('div'); el.className='pcard';
+    el.innerHTML=`<div class="art">${opt.art}</div><div class="name">${opt.n}</div><div class="desc">${opt.x}</div>`;
+    el.onclick=()=>{wrap.classList.remove('show');applyChoiceEffect(owner,opt);render();};
+    cards.appendChild(el);
+  });
+  wrap.classList.add('show');
+}
+function applyChoiceEffect(owner,opt){
+  if(opt.id==='upgrade')owner.skillUpgraded=true;
+  else if(opt.id==='findTech'){
+    const techs=[];
+    for(const tid in C)if(C[tid]&&C[tid].tech)techs.push(tid);
+    if(techs.length&&owner.hand.length<10)owner.hand.push(techs[Math.floor(Math.random()*techs.length)]);
+  }
+  else if(opt.id==='discSpell'){owner.spellDiscount=1;owner.spellDiscountRound=G.round+1;}
+  else if(opt.id==='discUnit'){owner.unitDiscount=1;owner.unitDiscountRound=G.round+1;}
+  else if(opt.id==='massHp'){for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m)m.h+=3;}}
+  else if(opt.id==='massAtk'){for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m)m.tempAtk=(m.tempAtk||0)+2;}}
+}
+function applyBlessing(owner,opp,eff){
+  if(eff.ty==='heal')owner.hp=Math.min(owner.maxHp,owner.hp+eff.v);
+  else if(eff.ty==='face')dmgLeader(opp,eff.v);
+  else if(eff.ty==='aoe'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)applyDamage(opp,r,c,eff.v);}
+  }
+  else if(eff.ty==='summon')summonTokens(owner,eff.n,eff.a,eff.h,'⚔️','召唤物');
+  else if(eff.ty==='draw'){for(let i=0;i<eff.n;i++)draw(owner);}
+  else if(eff.ty==='manaNext')owner.manaNext=(owner.manaNext||0)+eff.v;
+  else if(eff.ty==='overload'){ owner.mana+=eff.v; if(owner.energyCapped)owner.mana=1; }
+  else if(eff.ty==='freezeAll'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+      const m=opp.rows[r][c];
+      if(m&&m.mistRevealed&&!(G.envs[c]&&G.envs[c].type==='swift'))m.frozen=true;
+    }
+  }
+  else if(eff.ty==='buffRandom'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m)list.push({r,c});}
+    for(let i=0;i<eff.n&&list.length;i++){
+      const idx=Math.floor(Math.random()*list.length);
+      const t=list.splice(idx,1)[0];
+      owner.rows[t.r][t.c].a+=1; owner.rows[t.r][t.c].h+=1;
+    }
+  }
+  else if(eff.ty==='accident'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];applyDamage(opp,t.r,t.c,999);}
+  }
+  else if(eff.ty==='giveMulti'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m&&!m.k.includes('multi'))list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];owner.rows[t.r][t.c].k.push('multi');}
+  }
+  else if(eff.ty==='freeze1'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];opp.rows[t.r][t.c].frozen=true;}
+  }
+  else if(eff.ty==='gainCorpses'){G.corpses+=eff.v;}
+  else if(eff.ty==='maxHpUpHeal'){ owner.maxHp+=eff.maxUp; owner.hp=Math.min(owner.maxHp,owner.hp+eff.heal); }
+  else if(eff.ty==='drawBuffHp'){
+    for(let i=0;i<eff.draw;i++)draw(owner);
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];owner.rows[t.r][t.c].h+=eff.hp;}
+  }
+  else if(eff.ty==='enemyHandTax'){ opp.handTax=eff.v; opp.handTaxRound=G.round; }
+  else if(eff.ty==='enemyAtkDown'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m)m.atkDown=(m.atkDown||0)+eff.v;}
+  }
+  else if(eff.ty==='massHpBuff'){ for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=owner.rows[r][c];if(m)m.h+=eff.v;} }
+  else if(eff.ty==='discoverLegendary'){
+    const legends=[];
+    for(const id in C){if(C[id].rar===5&&!C[id].ult&&!id.startsWith('BSEL_')&&!id.startsWith('BOTH_'))legends.push(id);}
+    sh(legends);
+    if(owner.ai){if(legends.length&&owner.hand.length<10)owner.hand.push(legends[0]);}
+    else showDiscover(legends.slice(0,3),owner);
+  }
+  else if(eff.ty==='discoverLegendarySpell'){
+    const legends=[];
+    for(const id in C){if(C[id].rar===5&&!C[id].m&&!C[id].ult&&!id.startsWith('BSEL_')&&!id.startsWith('BOTH_'))legends.push(id);}
+    sh(legends);
+    if(owner.ai){if(legends.length&&owner.hand.length<10)owner.hand.push(legends[0]);}
+    else showDiscover(legends.slice(0,3),owner);
+  }
+  else if(eff.ty==='freezeChain'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)list.push({r,c});}
+    if(list.length){
+      const t=list[Math.floor(Math.random()*list.length)];
+      const m=opp.rows[t.r][t.c];if(m)m.frozen=true;
+      [[t.r-1,t.c],[t.r+1,t.c],[t.r,t.c-1],[t.r,t.c+1]].forEach(([nr,nc])=>{
+        if(nr>=0&&nr<2&&nc>=0&&nc<6){const mm=opp.rows[nr][nc];if(mm&&mm.mistRevealed)mm.frozen=true;}
+      });
+    }
+  }
+  else if(eff.ty==='drawEnergy'){ draw(owner); owner.mana+=1; if(owner.energyCapped)owner.mana=1; }
+  else if(eff.ty==='maxManaUp'){ owner.maxMana=owner.maxMana+1; owner.mana=owner.maxMana; }
+  chkWin();
+}
+function applyUlt(owner,opp,eff){
+  if(eff.ty==='heal')owner.hp=Math.min(owner.maxHp,owner.hp+eff.v);
+  else if(eff.ty==='aoe'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m&&m.mistRevealed)applyDamage(opp,r,c,eff.v);}
+  }
+  else if(eff.ty==='summon')summonTokens(owner,eff.n,eff.a,eff.h,'💀','亡灵');
+  else if(eff.ty==='faceDraw'){
+    if(eff.v)dmgLeader(opp,eff.v);
+    if(eff.heal)owner.hp=Math.min(owner.maxHp,owner.hp+eff.heal);
+    draw(owner);
+  }
+  else if(eff.ty==='gainTech'){
+    const techs=[];
+    for(const id in C)if(C[id]&&C[id].tech&&C[id].cost<=5)techs.push(id);
+    for(let i=0;i<eff.n&&techs.length;i++){const pick=techs[Math.floor(Math.random()*techs.length)];if(owner.hand.length<10)owner.hand.push(pick);}
+  }
+  else if(eff.ty==='enemyHandTax'){ opp.handTax=eff.v; opp.handTaxRound=G.round; }
+  else if(eff.ty==='maxHpUpHeal'){ owner.maxHp+=eff.maxUp; owner.hp=Math.min(owner.maxHp,owner.hp+eff.heal); }
+  else if(eff.ty==='enemyAtkDown'){
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=opp.rows[r][c];if(m)m.atkDown=(m.atkDown||0)+eff.v;}
+  }
+  else if(eff.ty==='drawEnergy'){ draw(owner); owner.mana += 1; if(owner.energyCapped)owner.mana=1; }
+  chkWin();
+}
+function applyEnvCard(owner,opp,eff,target){
+  if(!target||target.r===undefined)return;
+  const col=target.c;
+  if(eff.ty==='pool'){
+    [G.human,G.spirit].forEach(p=>{
+      for(let r=0;r<2;r++){
+        const m=p.rows[r][col];
+        if(m&&!m.k.includes('aquatic')){p.rows[r][col]=null;G.corpses++;}
+      }
+    });
+  }else if(eff.ty==='corrupt'){
+    [G.human,G.spirit].forEach(p=>{
+      for(let r=0;r<2;r++){
+        const m=p.rows[r][col];
+        if(m&&!m.k.includes('arm')){p.rows[r][col]=null;G.corpses++;}
+      }
+    });
+  }
+  const existing=G.envs[col];
+  const permanent=existing&&existing.expiresRound===9999;
+  G.envs[col]={id:eff.ty,side:owner===G.human?'human':'spirit',
+    expiresRound:permanent?9999:G.round+6,type:eff.ty};
+}
+
+function activeSide(){
+  if(G.phase===PH.SPIRIT_PLAY)return G.reversed?'human':'spirit';
+  if(G.phase===PH.HUMAN_PLAY)return G.reversed?'spirit':'human';
+  if(G.phase===PH.SPIRIT_SPELL)return G.reversed?'human':'spirit';
+  return null;
+}
+function isPlayerTurn(){return activeSide()===G.playerSide&&!G.over;}
+function canEndPhase(){if(G.over||G.phase===PH.COMBAT)return false;return activeSide()===G.playerSide;}
+function setPhase(ph,text){
+  G.phase=ph;
+  $('#phaseBar').textContent=(G.reversed?'🔄 ':'')+text;
+  $('#phaseBar').classList.toggle('reversed',G.reversed);
+  $('#phaseBar').classList.remove('targeting');
+  const owner=activeSide();
+  $('#eb').classList.toggle('active',owner==='spirit');
+  $('#pb').classList.toggle('active',owner==='human');
+  render();
+}
+function endTurnEffects(owner){
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    const m=owner.rows[r][c];if(!m)continue;
+    const card=C[m.id];
+    if(card&&card.endTurn==='doomBot'){
+      const enemy=owner===G.human?G.spirit:G.human;
+      const list=[];
+      for(let er=0;er<2;er++)for(let ec=0;ec<6;ec++)if(enemy.rows[er][ec])list.push({r:er,c:ec});
+      if(list.length){const t=list[Math.floor(Math.random()*list.length)];applyDamage(enemy,t.r,t.c,2);}
+      else dmgLeader(enemy,2);
+    }
+    if(card&&card.endTurn==='maxHpDownBoth'){ reduceMaxHp(G.human,card.endTurnV||2); reduceMaxHp(G.spirit,card.endTurnV||2); }
+    if(card&&card.endTurn==='gemMine'){
+      let selfCount = 0, oppCount = 0;
+      const enemy = owner===G.human?G.spirit:G.human;
+      for(let r2=0;r2<2;r2++)for(let c2=0;c2<6;c2++){
+        if(owner.rows[r2][c2]) selfCount++;
+        if(enemy.rows[r2][c2]) oppCount++;
+      }
+      if (selfCount > oppCount) {
+        let gems = ['gem_ruby','gem_haste','gem_pain','gem_death','gem_copy','gem_evolve','gem_legend'];
+        let pick = gems[Math.floor(Math.random()*gems.length)];
+        owner.deck.push(pick); owner.deck = sh(owner.deck);
+      }
+    }
+  }
+  if(owner.bloodPact && !G.over){
+    reduceMaxHp(owner,1);
+    if(!G.over){ owner.hp=Math.min(owner.maxHp,owner.hp+1); G.corpses+=1; }
+  }
+  if (owner === G.player && G.rogue.active && G.rogue.relics.includes('regen') && !G.over) {
+    owner.hp = Math.min(owner.maxHp, owner.hp + 1);
+  }
+}
+function startRound(){
+  if(G.over)return;
+  G.round++;G.sel=null; G.targeting=null;
+  $('#phaseBar').classList.remove('targeting');
+  [G.human,G.spirit].forEach(p=>{
+    const carried=Math.min(1,p.mana);
+    const bonus=p.manaNext||0;
+    p.manaNext=0;
+    if (p.maxMana < 10) p.maxMana = Math.min(10, p.maxMana+1+bonus);
+    else if (bonus > 0) p.maxMana += bonus;
+    if (p===G.player && G.rogue.active && G.rogue.relics.includes('mana') && p.maxMana < 10) p.maxMana += 1;
+    if(p.energyCapped)p.maxMana=1;
+    p.mana=p.energyCapped?1:p.maxMana+carried;
+    p.leaderUsed=false;
+    p.switchedThisTurn=false;
+    p.handTax=0;
+    p.firstSpellDiscount=0;
+    p.nextCardDrain=0;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=p.rows[r][c];if(m){m.atkDown=0;m.tempAtk=0;}}
+  });
+  [G.human,G.spirit].forEach(p=>{
+    let has=false;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=p.rows[r][c];if(m&&m.k.includes('firstSpellDiscount')){has=true;break;}}
+    if(has)p.firstSpellDiscount=1;
+  });
+  G.portalActive={human:false,spirit:false};
+  for(let c=0;c<6;c++){ if(G.envs[c]&&G.envs[c].expiresRound<=G.round)G.envs[c]=null; }
+  [G.human,G.spirit].forEach(p=>{
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=p.rows[r][c];if(m&&m.burning)applyDamage(p,r,c,1);}
+  });
+  if(G.over)return;
+  for(let c=0;c<6;c++){
+    const env=G.envs[c];if(!env)continue;
+    if(env.type==='corrupt'||env.type==='drain'){
+      [G.human,G.spirit].forEach(p=>{ for(let r=0;r<2;r++)if(p.rows[r][c])applyDamage(p,r,c,1); });
+    }
+  }
+  if(G.over)return;
+  const firstSide=G.reversed?'human':'spirit';
+  draw(firstSide==='human'?G.human:G.spirit);
+  const ownerLabel=firstSide==='human'?'🧑 人类':'👻 魔灵';
+  setPhase(PH.SPIRIT_PLAY,`第 ${G.round} 回合 · ${ownerLabel}出随从`);
+  if(G.playerSide!==firstSide)setTimeout(aiPlayStep,600);
+}
+function enterHumanPlayPhase(){
+  if(G.over)return;
+  const owner=G.reversed?G.spirit:G.human;
+  draw(owner);
+  const ownerLabel=G.reversed?'👻 魔灵':'🧑 人类';
+  setPhase(PH.HUMAN_PLAY,`${ownerLabel}出随从 + 法术`);
+  if(owner.ai)setTimeout(aiPlayStep,600);
+}
+function enterSpiritSpellPhase(){
+  if(G.over)return;
+  const owner=G.reversed?G.human:G.spirit;
+  const ownerLabel=G.reversed?'🧑 人类':'👻 魔灵';
+  setPhase(PH.SPIRIT_SPELL,`${ownerLabel}出法术`);
+  if(owner.ai)setTimeout(aiPlayStep,500);
+}
+function endPhase(){
+  if(!canEndPhase())return;
+  if (TUT.active && TUT.step === 4) { toastMessage('先打出一张随从牌吧～', '#ffd166'); return; }
+  tutOnEndClicked();
+  G.sel=null;
+  if(G.phase===PH.SPIRIT_PLAY)enterHumanPlayPhase();
+  else if(G.phase===PH.HUMAN_PLAY)enterSpiritSpellPhase();
+  else if(G.phase===PH.SPIRIT_SPELL)startCombat();
+}
+
+function aiPlayStep(){
+  if(G.over)return;
+  if (G.tutorialMode) {
+    const side=activeSide();
+    if(!side)return;
+    const owner=side==='human'?G.human:G.spirit;
+    if(!owner.ai)return;
+    if(G.phase===PH.SPIRIT_PLAY) enterHumanPlayPhase();
+    else if(G.phase===PH.HUMAN_PLAY) enterSpiritSpellPhase();
+    else if(G.phase===PH.SPIRIT_SPELL) startCombat();
+    return;
+  }
+  const side=activeSide();
+  if(!side)return;
+  const owner=side==='human'?G.human:G.spirit;
+  if(!owner.ai)return;
+  const isSpellPhase=(G.phase===PH.HUMAN_PLAY)||(G.phase===PH.SPIRIT_SPELL);
+  if(isSpellPhase && !owner.leaderUsed && owner.mana>=2 && !owner.bloodPact){
+    const leader=LEADERS[G.playerSide==='human'?'spirit':'human'][G.oppMainLeaderKey];
+    if(leader){
+      const eff=leader.skill.eff;
+      const enemyOwner = owner === G.human ? G.spirit : G.human;
+      if(eff.ty==='draw'||eff.ty==='manaNext'||eff.ty==='face'||eff.ty==='gainCorpses'||eff.ty==='shuffleDraw'||eff.ty==='maxManaUp'){
+        owner.leaderUsed=true;owner.mana-=2;
+        if(eff.ty==='draw')draw(owner);
+        else if(eff.ty==='manaNext')owner.manaNext=(owner.manaNext||0)+eff.v;
+        else if(eff.ty==='face')dmgLeader(enemyOwner,eff.v);
+        else if(eff.ty==='gainCorpses')G.corpses+=eff.v;
+        else if(eff.ty==='shuffleDraw'){draw(owner);}
+        else if(eff.ty==='maxManaUp'){owner.maxMana+=1;owner.mana=owner.maxMana;}
+      }else if((eff.ty==='destroyLowAtk'||eff.ty==='igniteTarget'||eff.ty==='randDmg') && owner.mana>=2){
+        let target=null;
+        for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+          const m=enemyOwner.rows[r][c];
+          if(!m||!m.mistRevealed)continue;
+          if(eff.ty==='destroyLowAtk'&&m.a<=2){target={r,c};break;}
+          if(eff.ty==='igniteTarget'){target={r,c};break;}
+          if(eff.ty==='randDmg'){target={r,c};break;}
+        }
+        if(target){
+          owner.leaderUsed=true;owner.mana-=2;
+          if(eff.ty==='destroyLowAtk')applyDamage(enemyOwner,target.r,target.c,999);
+          else if(eff.ty==='igniteTarget')enemyOwner.rows[target.r][target.c].burning=true;
+          else if(eff.ty==='randDmg')applyDamage(enemyOwner,target.r,target.c,eff.v);
+        }
+      }
+    }
+  }
+  const canPlayMinion = (G.phase===PH.SPIRIT_PLAY) || (G.phase===PH.HUMAN_PLAY);
+  const slot = canPlayMinion ? pickSlot(owner) : null;
+  if(slot){
+    let bestIdx=-1,bestScore=-1;
+    owner.hand.forEach((id,i)=>{
+      const cc=C[id];
+      if(!cc||!cc.m)return;
+      if(id.startsWith('cracked_'))return;
+      if(cc.summonOnly)return;
+      if(getEffectiveCost(owner,cc)>owner.mana)return;
+      if(cc.k&&cc.k.includes('adjacent_required')){
+        const left=slot.c>0?owner.rows[slot.r][slot.c-1]:null;
+        const right=slot.c<5?owner.rows[slot.r][slot.c+1]:null;
+        if(!left&&!right)return;
+      }
+      if(isWaterLane(slot.c)&&!(cc.k&&cc.k.includes('aquatic')))return;
+      let s=cc.cost;
+      if(cc.k){ if(cc.k.includes('charge'))s+=1; if(cc.k.includes('shield'))s+=1; if(cc.k.includes('multi'))s+=1; }
+      if(cc.tech)s+=1;
+      if(s>bestScore){bestScore=s;bestIdx=i;}
+    });
+    if(bestIdx>=0){
+      if(useMinion(owner,bestIdx,slot.r,slot.c)){ setTimeout(aiPlayStep,500); return; }
+    }
+  }
+  const cands=[];
+  for(let i=0;i<owner.hand.length;i++){
+    const cc=C[owner.hand[i]];
+    if(!cc||cc.m)continue;
+    if(owner.hand[i].startsWith('cracked_'))continue;
+    if(getEffectiveCost(owner,cc)>owner.mana)continue;
+    if(!cc.sp)continue;
+    if(cc.corpseCost&&G.corpses<cc.corpseCost)continue;
+    cands.push({i,cc,sp:cc.sp});
+  }
+  let best=null,bestScore=0;
+  for(const c of cands){ const s=scoreAICard(c.sp,owner); if(s>bestScore){bestScore=s;best=c;} }
+  let cast=false;
+  if(best&&bestScore>0){
+    const sp=best.sp;
+    const oppObj=owner===G.human?G.spirit:G.human;
+    if(sp.ty==='dmg'||sp.ty==='destroyAndSpread'){
+      let target=null,bestVal=0;
+      for(let r=0;r<2;r++)for(let c2=0;c2<6;c2++){
+        const m=oppObj.rows[r][c2];
+        if(m&&m.mistRevealed){const v=m.a+m.h;if(v>bestVal){bestVal=v;target={r,c:c2};}}
+      }
+      if(target){castSpell(owner,oppObj,best.i,target);cast=true;}
+      else if(oppObj.hp<=sp.v && (sp.ty==='dmg')) {castSpell(owner,oppObj,best.i,{ty:'leader'});cast=true;}
+    }else if(sp.ty==='blessing'&&sp.power&&sp.power.eff.ty==='freezeChain'){
+      let target=null;
+      for(let r=0;r<2;r++)for(let c2=0;c2<6;c2++){
+        const m=oppObj.rows[r][c2];
+        if(m&&m.mistRevealed&&!m.frozen){target={r,c:c2};break;}
+      }
+      if(target){castSpell(owner,oppObj,best.i,target);cast=true;}
+      else{castSpell(owner,oppObj,best.i);cast=true;}
+    }else if(sp.ty==='env'){
+      let bestCol=-1,bestCnt=-1;
+      for(let c2=0;c2<6;c2++){
+        let cnt=0;
+        for(let r=0;r<2;r++)if(oppObj.rows[r][c2])cnt++;
+        if(cnt>bestCnt){bestCnt=cnt;bestCol=c2;}
+      }
+      if(bestCol>=0){castSpell(owner,oppObj,best.i,{r:0,c:bestCol});cast=true;}
+    }else if(sp.ty==='morph'){
+      let target=null;
+      for(let r=0;r<2;r++)for(let c2=0;c2<6;c2++){
+        const m=oppObj.rows[r][c2];
+        if(m&&m.mistRevealed){target={r,c:c2,side:'s'};break;}
+      }
+      if(target){castSpell(owner,oppObj,best.i,target);cast=true;}
+    }else if(sp.ty==='envSacrifice'){
+      let found=false;
+      for(let r=0;r<2&&!found;r++)for(let c2=0;c2<6;c2++){
+        const m=owner.rows[r][c2];
+        if(m&&m.k.includes('aquatic')&&G.envs[c2]){
+          castSpell(owner,oppObj,best.i,{r,c:c2}); cast=true; found=true; break;
+        }
+      }
+    }
+  }
+  render();
+  if(cast&&!G.over)setTimeout(aiPlayStep,500);
+  else{
+    if(G.phase===PH.SPIRIT_PLAY)enterHumanPlayPhase();
+    else if(G.phase===PH.HUMAN_PLAY)enterSpiritSpellPhase();
+    else if(G.phase===PH.SPIRIT_SPELL)startCombat();
+  }
+}
+function pickSlot(owner){
+  const block=[],empty=[];
+  const gLane=gravityRestrict(owner);
+  if(gLane!==-1)for(let r=0;r<2;r++)if(!owner.rows[r][gLane])return {r,c:gLane};
+  const oppObj=owner===G.human?G.spirit:G.human;
+  for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+    if(owner.rows[r][c])continue;
+    if(isWaterLane(c))continue;
+    if(oppObj.rows[r][c])block.push({r,c});else empty.push({r,c});
+  }
+  const pool=block.length?block:empty;
+  if(!pool.length)return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function scoreAICard(sp,owner){
+  let score=0;
+  const t=sp.ty;
+  const oppObj=owner===G.human?G.spirit:G.human;
+  if(t==='aoe'){
+    let kills=0,total=0;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=oppObj.rows[r][c];if(!m||!m.mistRevealed)continue;total++;if(m.h<=sp.v)kills++;}
+    score=kills*12+total*2;
+  }else if(t==='dmg'){
+    let bestVal=0;
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){
+      const m=oppObj.rows[r][c];
+      if(m&&m.mistRevealed&&m.h<=sp.v){const v=m.a+m.h;if(v>bestVal)bestVal=v;}
+    }
+    score=bestVal>0?8+bestVal:(oppObj.hp<=sp.v?50:0);
+  }else if(t==='env')score=6;
+  else if(t==='blessing')score=10;
+  else if(t==='draw')score=4;
+  else if(t==='ult')score=12;
+  else if(t==='accident')score=15;
+  else if(t==='choice')score=8;
+  else if(t==='reverse')score=owner===G.human?(G.reversed?0:(Math.random()<0.5?8:0)):0;
+  else if(t==='bothMaxHpDown')score=3;
+  else if(t==='corpseBlast')score=(owner.hp===owner.maxHp && G.corpses>=2)?8:0;
+  else if(t==='darkPact')score=4;
+  else if(t==='maxHpDownHeal')score=(owner.hp<owner.maxHp*0.5)?6:2;
+  else if(t==='destroyAndSpread')score=15;
+  else if(t==='growSpell')score=6;
+  else if(t==='massBuff')score=8;
+  else if(t==='massWall')score=7;
+  else if(t==='morph')score=5;
+  else if(t==='lineStrike')score=14;
+  else if(t==='envSacrifice')score=4;
+  else if(t==='bloodReverse')score=(G.corpses>owner.hp)?10:0;
+  else if(t==='healAll')score=8;
+  else if(t==='gemHaste')score=10;
+  else if(t==='destroyUnit')score=12;
+  else if(t==='copyUnit')score=8;
+  else if(t==='evolveGems')score=7;
+  else if(t==='copyDeckMinion')score=6;
+  return score;
+}
+
+function useLeaderSkill(){
+  if(!isPlayerTurn())return;
+  if(G.player.bloodPact)return;
+  const isSpellPhase=(G.phase===PH.HUMAN_PLAY)||(G.phase===PH.SPIRIT_SPELL);
+  if(!isSpellPhase)return;
+  if(G.player.leaderUsed||G.player.mana<2)return;
+  const leaderKey=G.player.mode==='main'?G.mainLeaderKey:G.subLeaderKey;
+  const leader=LEADERS[G.playerSide][leaderKey];if(!leader)return;
+  const eff=leader.skill.eff;
+  const oppSide = G.playerSide==='human'?'s':'h';
+  if(eff.ty==='destroyLowAtk'||eff.ty==='igniteTarget'){
+    startTargeting({
+      type:'skill',
+      desc:eff.ty==='destroyLowAtk'?'选择攻击力≤2的敌方单位':'选择要点燃的敌方单位',
+      validFn:(r,c,side)=>{
+        if(side!==oppSide)return false;
+        const m=G.opp.rows[r][c];
+        if(!m||!m.mistRevealed)return false;
+        if(eff.ty==='destroyLowAtk'&&m.a>2)return false;
+        return true;
+      },
+      onSelect:(r,c)=>{
+        if(G.player.leaderUsed||G.player.mana<2)return;
+        G.player.leaderUsed=true;G.player.mana-=2;
+        const m=G.opp.rows[r][c];if(!m)return;
+        if(eff.ty==='destroyLowAtk')applyDamage(G.opp,r,c,999);
+        else m.burning=true;
+        $('#phaseBar').classList.remove('targeting'); render();
+      }
+    });
+    return;
+  }
+  G.player.leaderUsed=true;G.player.mana-=2;
+  if(G.player.skillUpgraded){
+    draw(G.player);
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=G.player.rows[r][c];if(m)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];G.player.rows[t.r][t.c].a+=1;G.player.rows[t.r][t.c].h+=1;}
+  }
+  else if(eff.ty==='draw')draw(G.player);
+  else if(eff.ty==='buff'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=G.player.rows[r][c];if(m)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];G.player.rows[t.r][t.c].a+=1;G.player.rows[t.r][t.c].h+=1;}
+  }
+  else if(eff.ty==='face')dmgLeader(G.opp,eff.v);
+  else if(eff.ty==='manaNext')G.player.manaNext=(G.player.manaNext||0)+eff.v;
+  else if(eff.ty==='randDmg'){
+    const list=[];
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=G.opp.rows[r][c];if(m&&m.mistRevealed)list.push({r,c});}
+    if(list.length){const t=list[Math.floor(Math.random()*list.length)];applyDamage(G.opp,t.r,t.c,eff.v);}
+    else dmgLeader(G.opp,eff.v);
+  }
+  else if(eff.ty==='shuffleDraw'){
+    if(G.player.hand.length>0){
+      const idx=Math.floor(Math.random()*G.player.hand.length);
+      const pick=G.player.hand[idx];
+      if(pick){G.player.hand.splice(idx,1);G.player.deck.push(pick);sh(G.player.deck);}
+    }
+    draw(G.player);
+  }
+  else if(eff.ty==='gainCorpses'){G.corpses+=eff.v;}
+  else if(eff.ty==='maxManaUp'){ G.player.maxMana+=1; G.player.mana=G.player.maxMana; }
+  render();
+}
+function switchLeader(){
+  if(!isPlayerTurn())return;
+  if(G.player.bloodPact)return;
+  if(G.player.switchedThisTurn)return;
+  if(G.player.mana<2)return;
+  G.player.mana-=2;
+  if(G.player.mode==='main'){ G.player.mainDeck=G.player.deck; G.player.mode='sub';G.player.deck=G.player.subDeck; }
+  else{ G.player.subDeck=G.player.deck; G.player.mode='main';G.player.deck=G.player.mainDeck; }
+  if(G.player.mode==='sub')draw(G.player);
+  G.player.switchedThisTurn=true;
+  render();
+}
+
+function canAttack(m){
+  if(!m||m.h<=0)return false;
+  if(m.frozen)return false;
+  if(m.k.includes('chargeup')&&!m.charged)return false;
+  return true;
+}
+function spawnParticles(fromEl,toEl,color){
+  if(!fromEl||!toEl)return;
+  const a=fromEl.getBoundingClientRect(),b=toEl.getBoundingClientRect();
+  const x1=a.left+a.width/2,y1=a.top+a.height/2;
+  const x2=b.left+b.width/2,y2=b.top+b.height/2;
+  for(let i=0;i<8;i++){
+    const p=document.createElement('div');
+    p.style.cssText=`position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:400;box-shadow:0 0 6px ${color};left:${x1}px;top:${y1}px;background:${color}`;
+    document.body.appendChild(p);
+    const dx=x2-x1+(Math.random()-0.5)*30,dy=y2-y1+(Math.random()-0.5)*30;
+    const anim=p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px,${dy}px) scale(0.1)`,opacity:0}],{duration:300+Math.random()*120,easing:'ease-out'});
+    anim.onfinish=()=>p.remove();
+  }
+}
+function findWallInLane(defender,col){
+  for(let r=0;r<2;r++){
+    const m=defender.rows[r][col];
+    if(m&&m.k.includes('wall')&&m.mistRevealed)return {r,m};
+  }
+  return null;
+}
+async function doAttack(m,r,col,side){
+  const targetObj=side==='human'?G.spirit:G.human;
+  const atkSide=side==='human'?'h':'s';
+  const oppSide=atkSide==='h'?'s':'h';
+  const atkEl=document.querySelector(`.slot[data-side="${atkSide}"][data-r="${r}"][data-c="${col}"]`);
+  let dmg=Math.max(0,m.a+(m.tempAtk&&G.round>0?m.tempAtk:0)-(m.atkDown||0));
+  if(G.envs[col]&&G.envs[col].type==='boost')dmg+=1;
+  if(m.k.includes('charge')&&!m.chargeUsed){dmg=dmg*2;m.chargeUsed=true;}
+  const leaderDmg=dmg+(m.k.includes('blade')?4:0);
+  const isAmbush=m.k.includes('ambush');
+  const isPierce=m.k.includes('pierce');
+  const wall=(isAmbush||isPierce)?findWallInLane(targetObj,col):null;
+  if(wall){
+    const tgtEl=document.querySelector(`.slot[data-side="${oppSide}"][data-r="${wall.r}"][data-c="${col}"]`);
+    if(atkEl&&tgtEl)spawnParticles(atkEl,tgtEl,'#ffd166');
+    combatDamage(targetObj,wall.r,col,dmg,false,m.k.includes('ignite'),m.k.includes('freeze'));
+    render();await sleep(150);return;
+  }
+  if(isPierce){
+    const pierceRows = side === 'human' ? [1, 0] : [0, 1];
+    for(const tr of pierceRows){
+      const t=targetObj.rows[tr][col];
+      if(t&&t.h>0&&t.mistRevealed){
+        const tgtEl=document.querySelector(`.slot[data-side="${oppSide}"][data-r="${tr}"][data-c="${col}"]`);
+        if(atkEl&&tgtEl)spawnParticles(atkEl,tgtEl,'#ffd166');
+        combatDamage(targetObj,tr,col,dmg,false,m.k.includes('ignite'),m.k.includes('freeze'));
+      }
+    }
+    const leaderEl=$('#eb');if(atkEl&&leaderEl)spawnParticles(atkEl,leaderEl,'#ff8a8a');
+    dmgLeader(targetObj,leaderDmg);
+    if(m.k.includes('leaderBacklash')){const atkOwner=side==='human'?G.human:G.spirit;reduceMaxHp(atkOwner,3);}
+    render();await sleep(150);return;
+  }
+  if(isAmbush){
+    const leaderEl=$('#eb');if(atkEl&&leaderEl)spawnParticles(atkEl,leaderEl,'#ff8a8a');
+    dmgLeader(targetObj,leaderDmg);
+    if(m.k.includes('leaderBacklash')){const atkOwner=side==='human'?G.human:G.spirit;reduceMaxHp(atkOwner,3);}
+    render();await sleep(150);return;
+  }
+  const targetRows = side === 'human' ? [1, 0] : [0, 1];
+  let hit=null;
+  for(const tr of targetRows){
+    const t=targetObj.rows[tr][col];
+    if(t&&t.h>0&&t.mistRevealed){hit={r:tr,t};break;}
+  }
+  if(hit){
+    const tgtEl=document.querySelector(`.slot[data-side="${oppSide}"][data-r="${hit.r}"][data-c="${col}"]`);
+    if(atkEl&&tgtEl)spawnParticles(atkEl,tgtEl,'#ffd166');
+    combatDamage(targetObj,hit.r,col,dmg,false,m.k.includes('ignite'),m.k.includes('freeze'));
+  }else{
+    const leaderEl=$('#eb');if(atkEl&&leaderEl)spawnParticles(atkEl,leaderEl,'#ff8a8a');
+    dmgLeader(targetObj,leaderDmg);
+    if(m.k.includes('leaderBacklash')){const atkOwner=side==='human'?G.human:G.spirit;reduceMaxHp(atkOwner,3);}
+  }
+  render();await sleep(150);
+}
+async function startCombat(){
+  if(G.over)return;
+  [G.human,G.spirit].forEach(p=>{
+    for(let r=0;r<2;r++)for(let c=0;c<6;c++){const m=p.rows[r][c];if(m&&m.k.includes('mist'))m.mistRevealed=true;}
+  });
+  render();await sleep(200);
+  for(let col=0;col<6;col++){
+    if(G.over)return;
+    setPhase(PH.COMBAT,`⚔️ 第 ${col+1} 列战斗`);
+    render();await sleep(250);
+    for(const r of [0,1]){
+      if(G.over)return;
+      const m=G.human.rows[r][col];
+      if(!canAttack(m)||!m.k.includes('firststrike'))continue;
+      await doAttack(m,r,col,'human');
+    }
+    await sleep(150);
+    for(const r of [1,0]){
+      if(G.over)return;
+      const m=G.spirit.rows[r][col];
+      if(!canAttack(m))continue;
+      await doAttack(m,r,col,'spirit');
+    }
+    await sleep(150);
+    for(const r of [0,1]){
+      if(G.over)return;
+      const m=G.human.rows[r][col];
+      if(!m)continue;
+      if(m.k.includes('firststrike'))continue;
+      if(m.frozen)continue;
+      if(m.k.includes('chargeup')&&!m.charged)continue;
+      await doAttack(m,r,col,'human');
+    }
+    await sleep(150);
+    for(const side of ['spirit','human']){
+      if(G.over)return;
+      const owner=side==='spirit'?G.spirit:G.human;
+      const rows=side==='spirit'?[1,0]:[0,1];
+      for(const r of rows){
+        if(G.over)return;
+        const m=owner.rows[r][col];
+        if(!canAttack(m)||!m.k.includes('multi'))continue;
+        await doAttack(m,r,col,side);
+      }
+    }
+    await sleep(200);
+  }
+  cleanupDeaths(); clearFrozen(); render();
+  await sleep(400);
+  endCombat();
+}
+function endCombat(){
+  if(G.over)return;
+  endTurnEffects(G.human); endTurnEffects(G.spirit);
+  cleanupDeaths(); render();
+  setPhase(PH.COMBAT,'回合结束…');
+  setTimeout(startRound,700);
+}
+function chkWin(){
+  if(G.over)return;
+  if (G.tutorialMode) return;
+  const hd=G.human.hp<=0,sd=G.spirit.hp<=0;
+  if(!hd&&!sd)return;
+
+  if (G.rogue.active) {
+    G.over=true;G.sel=null;G.targeting=null;
+    const playerDead = G.playerSide==='human' ? hd : sd;
+    const aiDead     = G.playerSide==='human' ? sd : hd;
+    if (aiDead && !playerDead) { showRogueReward(); }
+    else {
+      G.rogue.active = false;
+      $('#rt').textContent = (playerDead && aiDead) ? '同归于尽' : '失败…';
+      $('#rt').className='rt lose';
+      $('#rs').textContent = (playerDead && aiDead)
+        ? '你与对手倒在了第 ' + (G.rogue.floor+1) + ' 层'
+        : '你倒在了第 ' + (G.rogue.floor+1) + ' 层';
+      $('#ov').classList.add('show'); render();
+    }
+    return;
+  }
+
+  G.over=true;G.sel=null;G.targeting=null;
+  const playerDead=G.playerSide==='human'?hd:sd;
+  const aiDead=G.playerSide==='human'?sd:hd;
+  let t,s,c;
+  if(playerDead&&aiDead){t='同归于尽';s='平局';c='draw';}
+  else if(aiDead){t='胜利！';s='你击败了对手';c='win';}
+  else{t='失败…';s='你被击败了';c='lose';}
+  $('#rt').textContent=t; $('#rt').className='rt '+c; $('#rs').textContent=s;
+  $('#ov').classList.add('show'); render();
+}
+
+function initBoard(){
+  const board=document.querySelector('.board'); board.innerHTML='';
+  const order=G.playerSide==='human'?['sr0','sr1','hr0','hr1']:['hr1','hr0','sr1','sr0'];
+  order.forEach(id=>{const row=document.createElement('div');row.className='row';row.id=id;board.appendChild(row);});
+  for(let r=0;r<2;r++){
+    for(let c=0;c<6;c++){
+      const s=document.createElement('div');
+      s.className='slot'; s.dataset.side='s';s.dataset.r=r;s.dataset.c=c;
+      s.onclick=()=>clickSlot('s',r,c); $('#sr'+r).appendChild(s);
+      const h=document.createElement('div');
+      h.className='slot'; h.dataset.side='h';h.dataset.r=r;h.dataset.c=c;
+      h.onclick=()=>clickSlot('h',r,c); $('#hr'+r).appendChild(h);
+    }
+  }
+}
+function mkMinionEl(m,side){
+  const d=document.createElement('div');
+  d.className='minion'+(side==='s'?' e':'')+(m.frozen?' frozen':'')+(m.burning?' burning':'')+(!m.mistRevealed?' mist':'');
+  let kw='';
+  if(m.shield)kw+='🛡';
+  if(m.k.includes('charge'))kw+='⚡';
+  if(m.k.includes('multi'))kw+='🔁';
+  if(side==='h'&&m.k.includes('firststrike'))kw+='🗡';
+  if(m.k.includes('ignite'))kw+='🔥';
+  if(m.k.includes('freeze'))kw+='❄';
+  if(m.k.includes('chargeup')&&!m.charged)kw+='🔋';
+  if(m.k.includes('blade'))kw+='🔱';
+  if(m.k.includes('pierce'))kw+='🏹';
+  if(m.k.includes('aquatic'))kw+='🌊';
+  if(m.k.includes('ambush'))kw+='🥷';
+  if(m.k.includes('hunt'))kw+='🎯';
+  if(m.k.includes('sacrifice'))kw+='🕯';
+  if(m.k.includes('tideSac'))kw+='🌊🕯';
+  if(m.k.includes('wall'))kw+='🧱';
+  if(m.k.includes('rally'))kw+='🤝';
+  if(m.k.includes('sympathy'))kw+='🔗';
+  if(m.k.includes('mist')&&!m.mistRevealed)kw+='🌫';
+  if(m.frozen)kw+='🧊';
+  if(m.burning)kw+='🩸';
+  if(m.ar)kw+='🪨';
+  if(m.atkDown)kw+='🔻';
+  if(m.tempAtk)kw+='🔺';
+  const mySideLetter = G.playerSide === 'human' ? 'h' : 's';
+  const artHtml=(!m.mistRevealed&&side!==mySideLetter)?'🌫':m.art;
+  const showAtk=Math.max(0,m.a+(m.tempAtk||0)-(m.atkDown||0));
+  d.innerHTML=`<div class="kw">${kw}</div><div class="ma">${artHtml}</div><div class="mat">${showAtk}</div><div class="mhp">${m.h}</div>`;
+  bindLongPressAny(d,m.id);
+  if(side===(G.playerSide==='human'?'h':'s')&&!m.mistRevealed){
+    d.onclick=(e)=>{e.stopPropagation();revealMist(m);};
+  }
+  return d;
+}
+function revealMist(m){
+  if(G.suppressClick){G.suppressClick=false;return;}
+  if(activeSide()!==G.playerSide)return;
+  const isPlayPhase=(G.phase===PH.SPIRIT_PLAY)||(G.phase===PH.HUMAN_PLAY)||(G.phase===PH.SPIRIT_SPELL);
+  if(!isPlayPhase)return;
+  if(m.mistRevealed)return;
+  m.mistRevealed=true; render();
+}
+function renderSlots(){
+  const sel=G.sel; const tg=G.targeting;
+  const playerAct=isPlayerTurn();
+  const mySide=G.playerSide==='human'?'h':'s';
+  const oppSide=G.playerSide==='human'?'s':'h';
+  document.querySelectorAll('.slot').forEach(el=>{
+    const side=el.dataset.side;
+    const r=+el.dataset.r,c=+el.dataset.c;
+    const owner=side==='h'?G.human:G.spirit;
+    const m=owner.rows[r][c];
+    let cls='slot';
+    const env=G.envs[c];
+    if(isWaterLane(c))cls+=' water';
+    else if(env&&env.type==='corrupt')cls+=' env-corrupt';
+    else if(env&&env.type==='gravity')cls+=' env-gravity';
+    else if(env&&['boost','drain','calm','swift'].includes(env.type))cls+=' env';
+    el.className=cls; el.innerHTML='';
+    if(m&&m.h>0)el.appendChild(mkMinionEl(m,side));
+    if(tg&&isPlayerTurn()){ if(tg.validFn(r,c,side)&&m&&m.h>0)el.classList.add('targetable'); return; }
+    if(!playerAct||!sel)return;
+    if(sel.k==='hand'){
+      const cc=C[G.player.hand[sel.i]]; if(!cc)return;
+      if(cc.m&&side===mySide&&!m){
+        if(isWaterLane(c)&&!(cc.k&&cc.k.includes('aquatic')))return;
+        const gLane=gravityRestrict(G.player);
+        if(gLane!==-1&&c!==gLane)return;
+        el.classList.add('play');
+      }
+      if(cc.tg&&side===oppSide)el.classList.add('target');
+      if(cc.envCard)el.classList.add('target');
+    }
+  });
+}
+function renderManaRow(el,p){
+  el.innerHTML='';
+  const lim=Math.max(p.maxMana,p.mana);
+  for(let i=0;i<lim;i++){
+    const d=document.createElement('div');
+    d.className='mana-dot'+(i<p.mana?(i>=p.maxMana?' bonus':' on'):'');
+    el.appendChild(d);
+  }
+  const t=document.createElement('span'); t.className='mana-txt';
+  t.textContent=`${p.mana}/${p.maxMana}`+(p.manaNext?` +${p.manaNext}`:'');
+  el.appendChild(t);
+  if(p.energyCapped){
+    const lock=document.createElement('span');
+    lock.style.cssText='font-size:10px;color:#c06bff;font-weight:800;margin-left:4px';
+    lock.textContent='🔒'; el.appendChild(lock);
+  }
+}
+function renderHand(){
+  const a=$('#hand');a.innerHTML='';
+  G.player.hand.forEach((id,i)=>{
+    if(!id)return;
+    const cc=C[id];if(!cc)return;
+    const effCost=getEffectiveCost(G.player,cc);
+    const hasDisc=effCost<cc.cost;
+    const isCracked = id.startsWith('cracked_');
+    const el=document.createElement('div');
+    el.className='card'+(cc.ult?' ult':(cc.m?'':(cc.envCard?' env':(cc.tech?' tech':' sp'))))
+      +(cc.rar===3?' r3':cc.rar===5?' r5':'')
+      +(hasDisc?' disc':'')+(isCracked?' cracked':'')
+      +(effCost>G.player.mana?' no':'')
+      +(G.sel&&G.sel.k==='hand'&&G.sel.i===i?' sel':'')
+      +(G.targeting&&G.targeting.handIdx===i?' targeting':'');
+    const bonus=cc.inHand==='spellBuff'?(G.player.handBuff||0):0;
+    const showA=(cc.a||0)+bonus,showH=(cc.h||0)+bonus;
+    el.innerHTML=`<div class="cc">${effCost}</div><div class="rar r${cc.rar}">${cc.rar}</div>
+      <div class="ca">${cc.art}</div><div class="cn">${cc.n}</div><div class="ct">${cc.x||''}</div>
+      ${cc.m?`<div class="cs"><span class="a">${showA}</span><span class="h">${showH}</span></div>`:''}`;
+    el.onclick=()=>{if(G.suppressClick){G.suppressClick=false;return;}clickHand(i);};
+    bindCard(el,id,i);
+    a.appendChild(el);
+  });
+}
+function render(){
+  $('#ehp').innerHTML=Math.max(0,G.opp.hp)+(G.opp.maxHp!==30?`<span class="hp-cap">/${G.opp.maxHp}</span>`:'');
+  $('#php').innerHTML=Math.max(0,G.player.hp)+(G.player.maxHp!==30?`<span class="hp-cap">/${G.player.maxHp}</span>`:'');
+  $('#eh').textContent=G.opp.hand.length; $('#ed').textContent=G.opp.deck.length;
+  $('#corpses').textContent=G.corpses;
+  const mySide=G.playerSide; const oppSide=G.playerSide==='human'?'spirit':'human';
+  const myLeaderKey=G.player.mode==='main'?G.mainLeaderKey:G.subLeaderKey;
+  const myLeader=LEADERS[mySide][myLeaderKey];
+  const oppLeaderKey=G.oppMainLeaderKey||Object.keys(LEADERS[oppSide])[0];
+  const oppLeader=LEADERS[oppSide][oppLeaderKey];
+  $('#eName').textContent=oppLeader?oppLeader.n:'AI';
+  $('#pName').textContent=`你（${myLeader?myLeader.n:'领袖'}）`;
+  if(oppLeader)$('#eAv').innerHTML=oppLeader.art+`<span class="mode-tag">主</span>`;
+  $('#pAv').innerHTML=(myLeader?myLeader.art:'❓')+`<span class="mode-tag">${G.player.mode==='main'?'主':'副'}</span>`;
+  renderManaRow($('#pManaRow'),G.player);
+  renderManaRow($('#eManaRow'),G.opp);
+  renderSlots();renderHand();
+  const canEnd=canEndPhase();
+  $('#end').disabled=!canEnd;
+  $('#end').textContent=canEnd?'结束':'等待';
+  const hs=$('#heroSkill');
+  const myTurn=isPlayerTurn();
+  const isSpellPhase=(G.phase===PH.HUMAN_PLAY)||(G.phase===PH.SPIRIT_SPELL);
+  hs.disabled=!myTurn||!isSpellPhase||G.player.leaderUsed||G.player.mana<2||G.player.bloodPact;
+  const skillName=G.player.skillUpgraded?'强'+(myLeader?myLeader.skill.n:''):(myLeader?myLeader.skill.n:'技能');
+  hs.textContent=G.player.bloodPact?'🩸已销毁':'✨'+skillName;
+  const sw=$('#switchBtn');
+  sw.disabled=!myTurn||G.player.switchedThisTurn||G.player.mana<2||G.player.bloodPact;
+  sw.textContent=G.player.bloodPact?'🩸已销毁':(G.player.switchedThisTurn?'🔁已切':'🔁2能量');
+}
+
+function bindCard(el,id,idx){
+  let startX=0,startY=0,dragging=false,ghost=null,longPressTimer=null;
+  const clearLp=()=>{if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;}};
+  const onStart=(e)=>{
+    if(!isPlayerTurn())return;
+    const card=C[id];if(!card||getEffectiveCost(G.player,card)>G.player.mana)return;
+    const t=e.touches?e.touches[0]:e;
+    startX=t.clientX;startY=t.clientY;dragging=false;
+    longPressTimer=setTimeout(()=>{if(!dragging){showTip(id);G.suppressClick=true;}},300);
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('mouseup',onEnd);
+    document.addEventListener('touchend',onEnd);
+    document.addEventListener('touchcancel',onEnd);
+  };
+  const onMove=(e)=>{
+    if(!isPlayerTurn())return;
+    const t=e.touches?e.touches[0]:e;
+    const dx=t.clientX-startX,dy=t.clientY-startY;
+    if(!dragging&&Math.hypot(dx,dy)>6){
+      dragging=true;clearLp();hideTip();
+      ghost=el.cloneNode(true);
+      ghost.style.cssText+=';position:fixed;opacity:.85;pointer-events:none;z-index:500;transform:scale(1.08);box-shadow:0 0 30px rgba(255,209,102,.8)';
+      document.body.appendChild(ghost);
+      el.style.opacity=0.3;
+    }
+    if(dragging&&ghost){
+      ghost.style.left=(t.clientX-33)+'px';
+      ghost.style.top=(t.clientY-46)+'px';
+      e.preventDefault();
+    }
+  };
+  const onEnd=(e)=>{
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('mouseup',onEnd);
+    document.removeEventListener('touchend',onEnd);
+    document.removeEventListener('touchcancel',onEnd);
+    clearLp();hideTip();
+    if(dragging&&ghost){
+      const t=e.changedTouches?e.changedTouches[0]:e;
+      const dropEl=document.elementFromPoint(t.clientX,t.clientY);
+      ghost.remove();ghost=null;
+      el.style.opacity='';
+      G.suppressClick=true;
+      if(dropEl)handleDrop(id,dropEl,idx);
+    }
+    dragging=false;
+  };
+  el.addEventListener('mousedown',onStart);
+  el.addEventListener('touchstart',onStart,{passive:true});
+}
+function bindLongPressAny(el,id){
+  let timer=null;
+  const start=()=>{if(!C[id])return;timer=setTimeout(()=>{showTip(id);G.suppressClick=true;},300);};
+  const cancel=()=>{if(timer){clearTimeout(timer);timer=null;}hideTip();};
+  el.addEventListener('mousedown',start);
+  el.addEventListener('mouseup',cancel);
+  el.addEventListener('mouseleave',cancel);
+  el.addEventListener('touchstart',start,{passive:true});
+  el.addEventListener('touchend',cancel);
+  el.addEventListener('touchcancel',cancel);
+  el.addEventListener('touchmove',cancel,{passive:true});
+}
+function handleDrop(id,dropEl,handIdx){
+  if(G.suppressClick){G.suppressClick=false;return;}
+  const card=C[id];if(!card)return;
+  if(handIdx === undefined || handIdx < 0) handIdx = G.player.hand.indexOf(id);
+  if(handIdx<0)return;
+  const slot=dropEl.closest('.slot');
+  const leaderBar=dropEl.closest('#eb');
+  const board=dropEl.closest('.board');
+  if(card.m){
+    if(G.phase===PH.SPIRIT_SPELL&&!G.portalActive[G.playerSide])return;
+    if(G.reversed&&G.phase===PH.SPIRIT_SPELL)return;
+    if(!slot)return;
+    const mySide=G.playerSide==='human'?'h':'s';
+    if(slot.dataset.side!==mySide)return;
+    const r=+slot.dataset.r,c=+slot.dataset.c;
+    if(G.player.rows[r][c])return;
+    if(isWaterLane(c)&&!(card.k&&card.k.includes('aquatic')))return;
+    const gLane=gravityRestrict(G.player);
+    if(gLane!==-1&&c!==gLane)return;
+    useMinion(G.player,handIdx,r,c);
+    G.sel=null;render();return;
+  }
+  if(G.phase===PH.SPIRIT_PLAY)return;
+  if(card.tg){
+    if(leaderBar&&!card.envCard){castSpell(G.player,G.opp,handIdx,{ty:'leader'});G.sel=null;render();return;}
+    if(!slot)return;
+    if(card.envCard){const r=+slot.dataset.r,c=+slot.dataset.c;castSpell(G.player,G.opp,handIdx,{r,c});G.sel=null;render();return;}
+    const oppSide=G.playerSide==='human'?'s':'h';
+    if(slot.dataset.side!==oppSide)return;
+    const r=+slot.dataset.r,c=+slot.dataset.c;
+    const tm=G.opp.rows[r][c];
+    if(!tm||!tm.mistRevealed)return;
+    castSpell(G.player,G.opp,handIdx,{r,c});
+    G.sel=null;render();return;
+  }
+  if(!board)return;
+  castSpell(G.player,G.opp,handIdx);
+  G.sel=null;render();
+}
+function showTip(id){
+  const c=C[id];if(!c)return;
+  const tip=$('#tip');
+  const rarName=c.rar===5?'传说':c.rar===3?'稀有':'普通';
+  const typeName=c.ult?'终极祝福':c.envCard?'环境':(c.m?'随从':(c.tech?'科技':'法术'));
+  const tag=TAGS[id]||{race:'',kw:[]};
+  const tagsLine=tag.race?`${tag.race}${tag.kw.length?' · '+tag.kw.join(' '):''}`:'';
+  const leaderName=c.leader?findLeaderName(c.leader):'';
+  tip.innerHTML=`<div class="t-art">${c.art}</div>
+    <div class="t-name">${c.n}</div>
+    <div class="t-rar">${typeName} · ${rarName} · ${c.cost}能量</div>
+    ${tagsLine?`<div class="t-tags">${tagsLine}</div>`:''}
+    ${leaderName?`<div class="t-tags" style="color:#ffb347">🔒 ${leaderName}专属</div>`:''}
+    ${c.m?`<div class="t-stats"><span class="a">${c.a}</span> / <span class="h">${c.h}</span></div>`:''}
+    ${c.x?`<div class="t-text">${c.x}</div>`:''}
+    ${c.x2?`<div class="t-text">${c.x2}</div>`:''}`;
+  tip.classList.add('show');
+}
+function findLeaderName(key){
+  for(const side of ['human','spirit']){ if(LEADERS[side][key])return LEADERS[side][key].n; }
+  return key;
+}
+function hideTip(){$('#tip').classList.remove('show');}
+function clickHand(i){
+  if(G.suppressClick){G.suppressClick=false;return;}
+  if(!isPlayerTurn())return;
+  if(G.targeting){cancelTargeting();return;}
+  const cc=C[G.player.hand[i]];
+  if(!cc)return;
+  if(G.player.hand[i].startsWith('cracked_')) { toastMessage('需要两张相同的裂开宝石合并', '#ff8a8a'); return; }
+  const effCost=getEffectiveCost(G.player,cc);
+  if(effCost>G.player.mana)return;
+  if(G.phase===PH.SPIRIT_PLAY&&!cc.m)return;
+  if(G.phase===PH.SPIRIT_SPELL&&cc.m&&!G.portalActive[G.playerSide])return;
+  if(G.reversed&&G.phase===PH.SPIRIT_SPELL&&cc.m)return;
+  if(G.sel&&G.sel.k==='hand'&&G.sel.i===i){G.sel=null;render();return;}
+  const req=getTargetRequirement(cc);
+  if(req){
+    if(cc.sp)cc.sp._idx=i;
+    startTargeting({
+      type:'card',handIdx:i,
+      validFn:(r,c,side)=>{
+        if(!req.validFn(r,c,side))return false;
+        const s = side==='s'?G.spirit:G.human;
+        const m = s.rows[r][c];
+        return m&&m.mistRevealed;
+      },
+      allowFace: req.allowFace, desc:req.desc,
+      onSelect:(r,c)=>{$('#phaseBar').classList.remove('targeting');castSpell(G.player,G.opp,i,{r,c});},
+      onSelectFace: req.allowFace ? () => {$('#phaseBar').classList.remove('targeting');castSpell(G.player,G.opp,i,{ty:'leader'});} : null
+    });
+    return;
+  }
+  if(!cc.m&&!cc.tg){
+    const opp=G.playerSide==='human'?G.spirit:G.human;
+    castSpell(G.player,opp,i);G.sel=null;render();return;
+  }
+  G.sel={k:'hand',i};render();
+}
+function clickSlot(side,r,c){
+  if(G.suppressClick){G.suppressClick=false;return;}
+  if(G.targeting){
+    const tg=G.targeting;
+    if(tg.validFn(r,c,side)){ const fn=tg.onSelect; G.targeting=null; $('#phaseBar').classList.remove('targeting'); fn(r,c); }
+    else cancelTargeting();
+    return;
+  }
+  if(!isPlayerTurn())return;
+  const sel=G.sel;
+  const mySide=G.playerSide==='human'?'h':'s';
+  const oppSide=G.playerSide==='human'?'s':'h';
+  const myObj=G.player,oppObj=G.opp;
+  if(sel&&sel.k==='hand'){
+    const cc=C[G.player.hand[sel.i]];
+    if(cc&&cc.m&&side===mySide&&!myObj.rows[r][c]){
+      if(G.phase===PH.SPIRIT_SPELL&&!G.portalActive[G.playerSide])return;
+      if(G.reversed&&G.phase===PH.SPIRIT_SPELL)return;
+      if(isWaterLane(c)&&!(cc.k&&cc.k.includes('aquatic')))return;
+      const gLane=gravityRestrict(G.player);
+      if(gLane!==-1&&c!==gLane)return;
+      useMinion(myObj,sel.i,r,c);
+      G.sel=null;render();return;
+    }
+    if(cc&&cc.envCard&&isPlayerTurn()){
+      castSpell(myObj,oppObj,sel.i,{r,c});
+      G.sel=null;render();return;
+    }
+    if(cc&&cc.tg&&side===oppSide&&oppObj.rows[r][c]){
+      if(G.phase===PH.SPIRIT_PLAY)return;
+      if(!oppObj.rows[r][c].mistRevealed)return;
+      castSpell(myObj,oppObj,sel.i,{r,c});
+      G.sel=null;render();return;
+    }
+  }
+  G.sel=null;render();
+}
+
+function showCastPopup(id,side,anchorEl){
+  const c=C[id];if(!c)return;
+  const popup=document.createElement('div');
+  popup.className='cast-popup '+(side==='human'?'human-side':'spirit-side');
+  popup.innerHTML=`<div class="cp-side">${side==='human'?'🧑':'👻'}</div>
+    <div class="cp-art">${c.art}</div><div class="cp-name">${c.n}</div>
+    ${c.x?`<div class="cp-text">${c.x}</div>`:''}`;
+  let left,top;
+  if(anchorEl){const r=anchorEl.getBoundingClientRect();left=r.left+r.width/2-70;top=r.top-100;}
+  else{left=window.innerWidth/2-70;top=window.innerHeight/2-80;}
+  popup.style.left=Math.max(4,Math.min(window.innerWidth-144,left))+'px';
+  popup.style.top=Math.max(60,top)+'px';
+  document.body.appendChild(popup);
+  requestAnimationFrame(()=>popup.classList.add('show'));
+  setTimeout(()=>{popup.classList.remove('show');setTimeout(()=>popup.remove(),250);},1500);
+}
+function logSpell(owner,id){
+  const c=C[id];if(!c)return;
+  if(c.m&&!c.use&&!c.envCard)return;
+  G.spellLog.push({side:owner===G.human?'human':'spirit',id,n:c.n,art:c.art,round:G.round});
+  if(G.spellLog.length>7)G.spellLog.shift();
+}
+function toggleSpellLog(){
+  const el=$('#spellLog');el.classList.toggle('show');
+  if(el.classList.contains('show'))renderSpellLog();
+}
+function renderSpellLog(){
+  const list=$('#slList');list.innerHTML='';
+  if(!G.spellLog.length){list.innerHTML='<div class="empty">暂无记录</div>';return;}
+  G.spellLog.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='sl-item '+s.side;
+    el.innerHTML=`<span class="ar">${s.art}</span><span class="tx">R${s.round} ${s.n}</span>`;
+    el.onclick=()=>showTip(s.id);
+    list.appendChild(el);
+  });
+}
+function toastMessage(text,color){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);
+    background:rgba(20,30,20,.96);border:2px solid ${color||'#ffd166'};border-radius:12px;
+    padding:14px 24px;font-size:15px;font-weight:800;color:${color||'#ffd166'};
+    z-index:800;pointer-events:none;box-shadow:0 0 30px ${color||'#ffd166'}88;
+    text-align:center;max-width:80vw;`;
+  t.textContent=text; document.body.appendChild(t);
+  requestAnimationFrame(()=>{t.style.transition='all .3s';t.style.opacity='0';t.style.top='20%';});
+  setTimeout(()=>t.remove(),1200);
+}
+
+let bkFilter='all', bkSearchText='';
+function bkMatchFilter(id){
+  const c=C[id];if(!c)return false;
+  if(bkFilter==='all')return true;
+  if(bkFilter==='common')return !c.leader;
+  if(bkFilter==='exclusive')return !!c.leader;
+  if(bkFilter==='minion')return !!c.m;
+  if(bkFilter==='spell')return !c.m&&!c.envCard&&!c.tech&&!c.ult;
+  if(bkFilter==='tech')return !!c.tech;
+  if(bkFilter==='env')return !!c.envCard;
+  if(bkFilter==='ult')return !!c.ult;
+  return true;
+}
+function bkMatchSearch(id){
+  if(!bkSearchText)return true;
+  const c=C[id];if(!c)return false;
+  const tag=TAGS[id]||{race:'',kw:[]};
+  const leaderName=c.leader?findLeaderName(c.leader):'';
+  const text=(c.n+' '+(c.x||'')+' '+tag.race+' '+tag.kw.join(' ')+' '+leaderName).toLowerCase();
+  return text.includes(bkSearchText.toLowerCase());
+}
+function bkMakeCard(id){
+  const c=C[id];
+  const tag=TAGS[id]||{race:'',kw:[]};
+  const el=document.createElement('div');
+  el.className='bk-card'+(c.ult?' ult':(c.m?'':(c.envCard?' env':(c.tech?' tech':' sp'))))
+    +(c.leader?' exclusive':'')+(c.rar===3?' r3':c.rar===5?' r5':'');
+  const leaderName=c.leader?findLeaderName(c.leader):'';
+  el.innerHTML=`<div class="bk-cc">${c.cost}</div><div class="bk-rar r${c.rar}">${c.rar}</div>
+    <div class="bk-art">${c.art}</div><div class="bk-name">${c.n}</div>
+    <div class="bk-tag">${tag.race}</div>
+    ${leaderName?`<div class="bk-leader">🔒 ${leaderName}</div>`:''}
+    ${c.m?`<div class="bk-stats"><span class="a">${c.a}</span><span class="h">${c.h}</span></div>`:''}`;
+  el.onclick=()=>showTip(id);
+  bindLongPressAny(el,id);
+  return el;
+}
+function bkRender(){
+  const body=$('#bkBody');body.innerHTML='';
+  const ids=Object.keys(C).filter(id=>!id.startsWith('BSEL_')&&!id.startsWith('BOTH_')&&!id.startsWith('BTMP_')&&!id.startsWith('COPY_'));
+  let shown=0;
+  ids.forEach(id=>{
+    if(!bkMatchFilter(id))return;
+    if(!bkMatchSearch(id))return;
+    body.appendChild(bkMakeCard(id));shown++;
+  });
+  if(shown===0)body.innerHTML='<div style="padding:20px;opacity:.5">没有符合条件的卡牌</div>';
+}
+$('#bookBtn').onclick=()=>{$('#book').classList.add('show');bkRender();};
+$('#bkClose').onclick=()=>$('#book').classList.remove('show');
+$('#bkSearch').oninput=(e)=>{bkSearchText=e.target.value;bkRender();};
+document.querySelectorAll('.bk-tab').forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll('.bk-tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active'); bkFilter=el.dataset.f; bkRender();
+  };
+});
+
+function startGame(){
+  G.reversed=false; G.growSpellLevel=0;
+  const randCol=Math.floor(Math.random()*5);
+  const randType=ENV_TYPES[Math.floor(Math.random()*ENV_TYPES.length)];
+  G.envs=[null,null,null,null,null,null];
+  G.envs[randCol]={type:randType,side:'neutral',expiresRound:9999};
+  $('#menu').classList.add('hide');
+  $('#game').style.display='flex';
+  $('#ov').classList.remove('show');
+  initBoard(); startRound();
+}
+$('#ingameSettings').onclick=openSettings;
+$('#end').onclick=endPhase;
+$('#heroSkill').onclick=useLeaderSkill;
+$('#switchBtn').onclick=switchLeader;
+$('#rb').onclick=()=>{
+  G.over=false; G.reversed=false; G.growSpellLevel=0;
+  G.targeting=null; G.rogue.active=false; G.tutorialMode=false;
+  $('#ov').classList.remove('show'); $('#game').style.display='none';
+  $('#menu').classList.remove('hide');
+};
+</script>
+</body>
+</html>
